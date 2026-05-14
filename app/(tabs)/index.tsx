@@ -167,11 +167,13 @@ export default function App() {
             {/* UPDATED: Added a clear heading for the content box */}
             <Text style={styles.inputLabel}>Document Content:</Text>
             <TextInput
-              style={[styles.inputBox, styles.modalTextArea]}
+              style={[styles.modalInputBox, styles.modalTextArea]}
               placeholder="Paste company data, facts, or rules here..."
-              placeholderTextColor="#888"
+              placeholderTextColor="#bfbfbf"
               multiline={true}
-              numberOfLines={6} // Increased for better visibility
+              numberOfLines={6}
+              textAlignVertical="top" // Forces text to start at the top on Android
+              secureTextEntry={false} // GUARANTEES words, not dots
               value={uploadContent}
               onChangeText={setUploadContent}
             />
@@ -179,10 +181,10 @@ export default function App() {
             {/* UPDATED: Added a clear heading for the password box */}
             <Text style={styles.inputLabel}>Admin Password:</Text>
             <TextInput
-              style={styles.inputBox}
+              style={styles.modalInputBox}
               placeholder="Enter password..."
-              placeholderTextColor="#888"
-              secureTextEntry={false} // UPDATED: Password is now fully visible
+              placeholderTextColor="#bfbfbf"
+              secureTextEntry={false} // FALSE = Shows words. TRUE = Shows dots.
               value={adminPassword}
               onChangeText={setAdminPassword}
             />
@@ -247,7 +249,19 @@ const styles = StyleSheet.create({
   modalOverlay: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.7)' },
   modalView: { width: '90%', backgroundColor: '#282a36', borderRadius: 20, padding: 25, alignItems: 'stretch', shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.25, shadowRadius: 4, elevation: 5 },
   modalTitle: { color: '#fff', fontSize: 22, fontWeight: 'bold', marginBottom: 20, textAlign: 'center' },
-  modalTextArea: { height: 140, textAlignVertical: 'top', borderRadius: 10, marginBottom: 20 }, // Made taller
-  inputLabel: { color: '#bd93f9', fontSize: 14, fontWeight: 'bold', marginBottom: 8, marginLeft: 5 }, // Added Label Style
+  
+  // Dedicated style for Modal inputs to force visibility against Dark Mode
+  modalInputBox: { 
+    backgroundColor: '#44475a', 
+    color: '#f8f8f2',           
+    padding: 12, 
+    borderRadius: 10, 
+    fontSize: 16, 
+    borderWidth: 1, 
+    borderColor: '#6272a4' 
+  },
+  
+  modalTextArea: { height: 140, textAlignVertical: 'top', marginBottom: 20 }, 
+  inputLabel: { color: '#bd93f9', fontSize: 14, fontWeight: 'bold', marginBottom: 8, marginLeft: 5 }, 
   modalButtonRow: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 15 }
 });
