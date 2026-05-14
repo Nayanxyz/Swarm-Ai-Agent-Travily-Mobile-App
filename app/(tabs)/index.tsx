@@ -1,7 +1,10 @@
 import React, { useRef, useState } from 'react';
 import {
   ActivityIndicator,
-  KeyboardAvoidingView, Platform,
+  Alert,
+  KeyboardAvoidingView,
+  Modal,
+  Platform,
   SafeAreaView,
   ScrollView,
   StyleSheet,
@@ -14,12 +17,49 @@ export default function App() {
     { id: '1', text: 'Hello Nayan! Mera naam Jango hai, Kya seva kr skta hu?', sender: 'ai' }
   ]);
   const [inputText, setInputText] = useState('');
-  
-  // 1. Naya State: Loading dikhane ke liye
   const [isLoading, setIsLoading] = useState(false);
   
-  // Auto-scroll ke liye ek reference
-  const scrollViewRef = useRef<ScrollView>(null);
+  // --- ADMIN UPLOAD STATE ---
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [uploadContent, setUploadContent] = useState('');
+  const [adminPassword, setAdminPassword] = useState('');
+  const [isUploading, setIsUploading] = useState(false);
+
+  const scrollViewRef = useRef(null);
+
+  // --- THE DYNAMIC UPLOAD FUNCTION ---
+  const handleUploadSubmit = async () => {
+    if (!uploadContent.trim() || !adminPassword.trim()) {
+      Alert.alert("Error", "Content and Password are required.");
+      return;
+    }
+
+    setIsUploading(true);
+    try {
+      const response = await fetch("https://swarm-api-super-agent-travily.onrender.com/upload-doc", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          admin_password: adminPassword,
+          content: uploadContent
+        })
+      });
+      const result = await response.json();
+      
+      if (response.ok && result.status === 'success') {
+        Alert.alert("Success", "Knowledge secured in vault.");
+        setUploadContent('');
+        setAdminPassword('');
+        setIsModalVisible(false); 
+      } else {
+        Alert.alert("Upload Failed", result.message || "Unauthorized.");
+      }
+    } catch (error) {
+      Alert.alert("Network Error", "Could not reach the server.");
+    } finally {
+      setIsUploading(false);
+    }
+  };
 
   const handleSend = async () => {
     if (inputText.trim() === '') return; 
@@ -29,12 +69,9 @@ export default function App() {
     
     setMessages((prevMessages) => [...prevMessages, newUserMsg]);
     setInputText('');
-    
-    // 2. Button dabte hi loading shuru karo
     setIsLoading(true);
 
     try {
-      // DHYAN DEIN: Apna Render URL confirm kar lena
       const response = await fetch('https://swarm-api-super-agent-travily.onrender.com/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -45,7 +82,6 @@ export default function App() {
       });
 
       const data = await response.json();
-
       const newAiMsg = { 
         id: Date.now().toString(), 
         text: data.final_answer || "Sorry, koi text nahi mila.", 
@@ -54,19 +90,15 @@ export default function App() {
       setMessages((prevMessages) => [...prevMessages, newAiMsg]);
 
     } catch (error) {
-      console.error("API Error:", error);
       const errorMsg = { id: Date.now().toString(), text: "Sorry bhai, server se connection toot gaya! 🔌", sender: 'ai' };
       setMessages((prevMessages) => [...prevMessages, errorMsg]);
     } finally {
-      // 3. Jawab aate hi (ya error aate hi) loading band karo
       setIsLoading(false);
     }
   };
 
   return (
     <SafeAreaView style={styles.container}>
-      
-      {/* 4. KEYBOARD AVOIDING VIEW ka jaadu */}
       <KeyboardAvoidingView 
         style={styles.keyboardAvoid} 
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -76,13 +108,18 @@ export default function App() {
         {/* HEADER */}
         <View style={styles.header}>
           <Text style={styles.headerText}>Swarm AI 🧠</Text>
+          <TouchableOpacity 
+            style={styles.headerAdminButton} 
+            onPress={() => setIsModalVisible(true)}
+          >
+            <Text style={styles.headerAdminText}>⚙️ Vault</Text>
+          </TouchableOpacity>
         </View>
 
         {/* CHAT AREA */}
         <ScrollView 
           style={styles.chatArea}
           ref={scrollViewRef}
-          // Jab naya message aaye, toh automatically neeche scroll ho jaye
           onContentSizeChange={() => scrollViewRef.current?.scrollToEnd({ animated: true })}
         >
           {messages.map((msg) => (
@@ -93,7 +130,6 @@ export default function App() {
             </View>
           ))}
           
-          {/* 5. LOADING ANIMATION (Sirf tab dikhega jab isLoading True hoga) */}
           {isLoading && (
             <View style={styles.loadingBubble}>
               <ActivityIndicator size="small" color="#bd93f9" />
@@ -109,31 +145,82 @@ export default function App() {
             placeholder="Type your message..."
             placeholderTextColor="#888"
             value={inputText}
-            onChangeText={(text) => setInputText(text)}
+            onChangeText={setInputText}
           />
           <TouchableOpacity style={styles.sendButton} onPress={handleSend} disabled={isLoading}>
             <Text style={styles.sendText}>Send</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.uploadButton} onPress={handleSend} disabled={isLoading}>
-            <Text style={styles.sendText}>Upload</Text>
-          </TouchableOpacity>
         </View>
-
       </KeyboardAvoidingView>
+
+      {/* --- ADMIN VAULT MODAL --- */}
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={isModalVisible}
+        onRequestClose={() => setIsModalVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalView}>
+            <Text style={styles.modalTitle}>Knowledge Vault</Text>
+            
+            {/* UPDATED: Added a clear heading for the content box */}
+            <Text style={styles.inputLabel}>Document Content:</Text>
+            <TextInput
+              style={[styles.inputBox, styles.modalTextArea]}
+              placeholder="Paste company data, facts, or rules here..."
+              placeholderTextColor="#888"
+              multiline={true}
+              numberOfLines={6} // Increased for better visibility
+              value={uploadContent}
+              onChangeText={setUploadContent}
+            />
+            
+            {/* UPDATED: Added a clear heading for the password box */}
+            <Text style={styles.inputLabel}>Admin Password:</Text>
+            <TextInput
+              style={styles.inputBox}
+              placeholder="Enter password..."
+              placeholderTextColor="#888"
+              secureTextEntry={false} // UPDATED: Password is now fully visible
+              value={adminPassword}
+              onChangeText={setAdminPassword}
+            />
+
+            {isUploading ? (
+              <ActivityIndicator size="large" color="#bd93f9" style={{ marginVertical: 10 }} />
+            ) : (
+              <View style={styles.modalButtonRow}>
+                <TouchableOpacity 
+                  style={[styles.sendButton, { backgroundColor: '#ff5555' }]} 
+                  onPress={() => setIsModalVisible(false)}
+                >
+                  <Text style={styles.sendText}>Cancel</Text>
+                </TouchableOpacity>
+                
+                <TouchableOpacity 
+                  style={[styles.sendButton, { backgroundColor: '#50fa7b' }]} 
+                  onPress={handleUploadSubmit}
+                >
+                  <Text style={[styles.sendText, { color: '#282a36' }]}>Submit</Text>
+                </TouchableOpacity>
+              </View>
+            )}
+          </View>
+        </View>
+      </Modal>
+
     </SafeAreaView>
   );
 }
 
 // === STYLESHEET ===
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#1e1e2e', 
-  },
-  keyboardAvoid: {
-    flex: 1,
-  },
+  container: { flex: 1, backgroundColor: '#1e1e2e' },
+  keyboardAvoid: { flex: 1 },
   header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     padding: 20,
     paddingTop: 50,
     backgroundColor: '#282a36',
@@ -141,84 +228,26 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#444',
   },
-  headerText: {
-    color: '#fff',
-    fontSize: 20,
-    fontWeight: 'bold',
-  },
-  chatArea: {
-    flex: 1,
-    padding: 15,
-  },
-  aiBubble: {
-    backgroundColor: '#383a59',
-    padding: 15,
-    borderRadius: 10,
-    marginBottom: 10,
-    alignSelf: 'flex-start',
-    maxWidth: '80%',
-  },
-  aiText: {
-    color: '#fff',
-    fontSize: 16,
-  },
-  userBubble: {
-    backgroundColor: '#ff79c6', 
-    padding: 15,
-    borderRadius: 10,
-    marginBottom: 10,
-    alignSelf: 'flex-end',
-    maxWidth: '80%',
-  },
-  userText: {
-    color: '#fff',
-    fontSize: 16,
-  },
-  loadingBubble: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#383a59',
-    padding: 10,
-    borderRadius: 10,
-    marginBottom: 10,
-    alignSelf: 'flex-start',
-  },
-  loadingText: {
-    color: '#bd93f9',
-    marginLeft: 8,
-    fontStyle: 'italic',
-  },
-  inputArea: {
-    flexDirection: 'row',
-    padding: 10,
-    backgroundColor: '#282a36',
-    alignItems: 'center',
-  },
-  inputBox: {
-    flex: 1,
-    backgroundColor: '#1e1e2e',
-    color: '#fff',
-    padding: 12,
-    borderRadius: 25,
-    fontSize: 16,
-  },
-  sendButton: {
-    backgroundColor: '#bd93f9',
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    borderRadius: 25,
-    marginLeft: 10,
-  }, 
-  uploadButton: {
-    backgroundColor: '#bd93f9',
-    paddingVertical: 9,
-    paddingHorizontal: 13,
-    borderRadius: 25,
-    marginLeft: 10,
-  },
-  sendText: {
-    color: '#fff',
-    fontWeight: 'bold',
-    fontSize: 16,
-  },
+  headerText: { color: '#fff', fontSize: 20, fontWeight: 'bold' },
+  headerAdminButton: { backgroundColor: '#44475a', padding: 8, borderRadius: 5 },
+  headerAdminText: { color: '#f8f8f2', fontSize: 14 },
+  chatArea: { flex: 1, padding: 15 },
+  aiBubble: { backgroundColor: '#383a59', padding: 15, borderRadius: 10, marginBottom: 10, alignSelf: 'flex-start', maxWidth: '80%' },
+  aiText: { color: '#fff', fontSize: 16 },
+  userBubble: { backgroundColor: '#ff79c6', padding: 15, borderRadius: 10, marginBottom: 10, alignSelf: 'flex-end', maxWidth: '80%' },
+  userText: { color: '#fff', fontSize: 16 },
+  loadingBubble: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#383a59', padding: 10, borderRadius: 10, marginBottom: 10, alignSelf: 'flex-start' },
+  loadingText: { color: '#bd93f9', marginLeft: 8, fontStyle: 'italic' },
+  inputArea: { flexDirection: 'row', padding: 10, backgroundColor: '#282a36', alignItems: 'center' },
+  inputBox: { flex: 1, backgroundColor: '#1e1e2e', color: '#fff', padding: 12, borderRadius: 10, fontSize: 16, borderWidth: 1, borderColor: '#44475a' },
+  sendButton: { backgroundColor: '#bd93f9', paddingVertical: 12, paddingHorizontal: 20, borderRadius: 25, marginLeft: 10, justifyContent: 'center', alignItems: 'center' },
+  sendText: { color: '#fff', fontWeight: 'bold', fontSize: 16 },
+  
+  // Modal Styles
+  modalOverlay: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.7)' },
+  modalView: { width: '90%', backgroundColor: '#282a36', borderRadius: 20, padding: 25, alignItems: 'stretch', shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.25, shadowRadius: 4, elevation: 5 },
+  modalTitle: { color: '#fff', fontSize: 22, fontWeight: 'bold', marginBottom: 20, textAlign: 'center' },
+  modalTextArea: { height: 140, textAlignVertical: 'top', borderRadius: 10, marginBottom: 20 }, // Made taller
+  inputLabel: { color: '#bd93f9', fontSize: 14, fontWeight: 'bold', marginBottom: 8, marginLeft: 5 }, // Added Label Style
+  modalButtonRow: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 15 }
 });
