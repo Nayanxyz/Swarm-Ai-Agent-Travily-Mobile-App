@@ -114,6 +114,9 @@ export default function App() {
           <TouchableOpacity style={styles.sendButton} onPress={handleSend} disabled={isLoading}>
             <Text style={styles.sendText}>Send</Text>
           </TouchableOpacity>
+          <TouchableOpacity style={styles.uploadButton} onPress={handleSend} disabled={isLoading}>
+            <Text style={styles.sendText}>Upload</Text>
+          </TouchableOpacity>
         </View>
 
       </KeyboardAvoidingView>
@@ -203,6 +206,13 @@ const styles = StyleSheet.create({
     backgroundColor: '#bd93f9',
     paddingVertical: 12,
     paddingHorizontal: 20,
+    borderRadius: 25,
+    marginLeft: 10,
+  }, 
+  uploadButton: {
+    backgroundColor: '#bd93f9',
+    paddingVertical: 9,
+    paddingHorizontal: 13,
     borderRadius: 25,
     marginLeft: 10,
   },
