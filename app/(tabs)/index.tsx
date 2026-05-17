@@ -161,6 +161,7 @@ export default function App() {
         <TouchableOpacity style={styles.secondaryBtn} onPress={signUpWithEmail} disabled={authLoading}>
           <Text style={styles.secondaryBtnText}>Create Account</Text>
         </TouchableOpacity>
+        <Text style={styles.authSubtitle}>create account if new user.</Text>
       </View>
     );
   }
