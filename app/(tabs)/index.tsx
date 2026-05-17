@@ -15,7 +15,7 @@ export default function App() {
 
   // --- CHAT STATE ---
   const [messages, setMessages] = useState([
-    { id: '1', text: 'Hello Nayan! Mera naam Jango hai, Kya seva kr skta hu?', sender: 'ai' }
+    { id: '1', text: 'Hello User! Mera naam Jango hai, Kya seva kr skta hu?', sender: 'ai' }
   ]);
   const [inputText, setInputText] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -32,17 +32,24 @@ export default function App() {
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
+      // If they are already logged in when the app opens, fetch their history!
+      if (session?.user?.id) {
+        fetchHistory(session.user.id);
+      }
     });
 
     supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
       
-      // THE ARCHITECTURAL FIX: Wiping the phone's local RAM on logout
-      if (!session) {
+      if (session?.user?.id) {
+        // THE FIX: If they just typed their password and logged in, fetch history!
+        fetchHistory(session.user.id);
+      } else {
+        // THE JANITOR: If they logout, wipe the screen blank.
         setMessages([
           { id: '1', text: 'Hello User! Mera naam Jango hai, Kya seva kr skta hu?', sender: 'ai' }
         ]);
-        setInputText(''); // Clear the input box just in case
+        setInputText('');
       }
     });
   }, []);
@@ -95,6 +102,32 @@ export default function App() {
       Alert.alert("Network Error", "Could not reach the server.");
     } finally {
       setIsUploading(false);
+    }
+  };
+
+  // === NEW: FETCH HISTORY FROM SERVER ===
+  const fetchHistory = async (userId: string) => {
+    try {
+      // 1. Knock on the new Python GET door
+      const response = await fetch(`https://swarm-api-super-agent-travily.onrender.com/history/${userId}`);
+      const result = await response.json();
+
+      if (response.ok && result.status === 'success') {
+        // 2. The Translator: The database uses 'role' and 'content'. 
+        // Your UI uses 'sender' and 'text'. We must translate the data format!
+        const formattedHistory = result.data.map((msg: { role: string, content: string }, index: number) => ({
+          id: `history-${index}`, // Give it a unique ID for React
+          text: msg.content,
+          sender: msg.role === 'assistant' ? 'ai' : 'user'
+        }));
+
+        // 3. Inject the past messages into the screen!
+        if (formattedHistory.length > 0) {
+          setMessages(formattedHistory);
+        }
+      }
+    } catch (error) {
+      console.log("Could not load history:", error);
     }
   };
 
