@@ -28,30 +28,27 @@ export default function App() {
 
   const scrollViewRef = useRef<ScrollView>(null);
 
-// === 1. BOOT SEQUENCE: CHECK FOR SAVED LOGIN ===
+// === 1. UPGRADED BOOT SEQUENCE: SINGLE-SOURCE LISTENER ===
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      // If they are already logged in when the app opens, fetch their history!
-      if (session?.user?.id) {
-        fetchHistory(session.user.id);
-      }
-    });
-
-    supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log(`[AUTH EVENT] System detected state: ${event}`);
       setSession(session);
       
-      if (session?.user?.id) {
-        // THE FIX: If they just typed their password and logged in, fetch history!
+      if (session?.user?.id && (event === 'SIGNED_IN' || event === 'INITIAL_SESSION')) {
+        console.log(`[AUTH SUCCESS] Launching history pull for user: ${session.user.id}`);
         fetchHistory(session.user.id);
-      } else {
-        // THE JANITOR: If they logout, wipe the screen blank.
+      } else if (event === 'SIGNED_OUT') {
+        console.log("[AUTH LOGOUT] Clearing memory via Janitor sequence.");
+        // THE JANITOR: Only runs when explicitly logging out
         setMessages([
           { id: '1', text: 'Hello User! Mera naam Jango hai, Kya seva kr skta hu?', sender: 'ai' }
         ]);
         setInputText('');
       }
     });
+
+    // Cleanup subscription when the app unmounts to prevent memory leaks
+    return () => subscription.unsubscribe();
   }, []);
 
   // === 2. AUTHENTICATION FUNCTIONS ===
