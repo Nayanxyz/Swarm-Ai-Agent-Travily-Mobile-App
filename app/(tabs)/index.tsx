@@ -1,18 +1,19 @@
-import React, { useRef, useState } from 'react';
+import { Session } from '@supabase/supabase-js';
+import React, { useEffect, useRef, useState } from 'react';
 import {
-  ActivityIndicator,
-  Alert,
-  KeyboardAvoidingView,
-  Modal,
-  Platform,
-  SafeAreaView,
-  ScrollView,
-  StyleSheet,
-  Text, TextInput, TouchableOpacity,
-  View
+  ActivityIndicator, Alert, KeyboardAvoidingView, Modal, Platform,
+  SafeAreaView, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View
 } from 'react-native';
+import { supabase } from './supabase'; // Ensure this path points to the file you created in Step 2
 
 export default function App() {
+  // --- AUTH STATE ---
+  const [session, setSession] = useState<Session | null>(null);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [authLoading, setAuthLoading] = useState(false);
+
+  // --- CHAT STATE ---
   const [messages, setMessages] = useState([
     { id: '1', text: 'Hello Nayan! Mera naam Jango hai, Kya seva kr skta hu?', sender: 'ai' }
   ]);
@@ -25,9 +26,36 @@ export default function App() {
   const [adminPassword, setAdminPassword] = useState('');
   const [isUploading, setIsUploading] = useState(false);
 
-  const scrollViewRef = useRef(null);
+  const scrollViewRef = useRef<ScrollView>(null);
 
-  // --- THE DYNAMIC UPLOAD FUNCTION ---
+  // === 1. BOOT SEQUENCE: CHECK FOR SAVED LOGIN ===
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+    });
+
+    supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+    });
+  }, []);
+
+  // === 2. AUTHENTICATION FUNCTIONS ===
+  async function signInWithEmail() {
+    setAuthLoading(true);
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) Alert.alert('Login Failed', error.message);
+    setAuthLoading(false);
+  }
+
+  async function signUpWithEmail() {
+    setAuthLoading(true);
+    const { error } = await supabase.auth.signUp({ email, password });
+    if (error) Alert.alert('Signup Failed', error.message);
+    else Alert.alert('Success', 'Account created! You are now logged in.');
+    setAuthLoading(false);
+  }
+
+  // === 3. THE DYNAMIC UPLOAD FUNCTION ===
   const handleUploadSubmit = async () => {
     if (!uploadContent.trim() || !adminPassword.trim()) {
       Alert.alert("Error", "Content and Password are required.");
@@ -41,6 +69,7 @@ export default function App() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           admin_password: adminPassword,
+          user_id: session?.user?.id, // ARCHITECTURAL FIX: Attaching the real UUID to the vault upload
           content: uploadContent
         })
       });
@@ -61,8 +90,9 @@ export default function App() {
     }
   };
 
+  // === 4. CHAT SEND FUNCTION ===
   const handleSend = async () => {
-    if (inputText.trim() === '') return; 
+    if (inputText.trim() === '' || !session?.user) return; 
 
     const userMessageText = inputText;
     const newUserMsg = { id: Date.now().toString(), text: userMessageText, sender: 'user' };
@@ -76,7 +106,7 @@ export default function App() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
-          user_id: 'nayan_mobile', 
+          user_id: session.user.id, // ARCHITECTURAL FIX: Passing cryptographic UUID to the brain
           prompt: userMessageText 
         }),
       });
@@ -97,6 +127,47 @@ export default function App() {
     }
   };
 
+  // ==========================================
+  // RENDER 1: LOGIN SCREEN (If user is not logged in)
+  // ==========================================
+  if (!session || !session.user) {
+    return (
+      <View style={styles.authContainer}>
+        <Text style={styles.authTitle}>Welcome !</Text>
+        <Text style={styles.authSubtitle}>Sign in to access your secure vault.</Text>
+        
+        <TextInput
+          style={styles.authInput}
+          placeholder="Email address"
+          placeholderTextColor="#888"
+          value={email}
+          onChangeText={setEmail}
+          autoCapitalize="none"
+          keyboardType="email-address"
+        />
+        <TextInput
+          style={styles.authInput}
+          placeholder="Password (min 6 chars)"
+          placeholderTextColor="#888"
+          value={password}
+          onChangeText={setPassword}
+          secureTextEntry={true}
+        />
+        
+        <TouchableOpacity style={styles.primaryBtn} onPress={signInWithEmail} disabled={authLoading}>
+          <Text style={styles.btnText}>{authLoading ? 'Loading...' : 'Sign In'}</Text>
+        </TouchableOpacity>
+        
+        <TouchableOpacity style={styles.secondaryBtn} onPress={signUpWithEmail} disabled={authLoading}>
+          <Text style={styles.secondaryBtnText}>Create Account</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
+  // ==========================================
+  // RENDER 2: CHAT SCREEN (If user is logged in)
+  // ==========================================
   return (
     <SafeAreaView style={styles.container}>
       <KeyboardAvoidingView 
@@ -108,12 +179,22 @@ export default function App() {
         {/* HEADER */}
         <View style={styles.header}>
           <Text style={styles.headerText}>Swarm AI 🧠</Text>
-          <TouchableOpacity 
-            style={styles.headerAdminButton} 
-            onPress={() => setIsModalVisible(true)}
-          >
-            <Text style={styles.headerAdminText}>⚙️ Vault</Text>
-          </TouchableOpacity>
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <TouchableOpacity 
+              style={[styles.headerAdminButton, { marginRight: 10 }]} 
+              onPress={() => setIsModalVisible(true)}
+            >
+              <Text style={styles.headerAdminText}>⚙️ Vault</Text>
+            </TouchableOpacity>
+            
+            {/* NEW: Logout Button */}
+            <TouchableOpacity 
+              style={[styles.headerAdminButton, { backgroundColor: '#ff5555' }]} 
+              onPress={() => supabase.auth.signOut()}
+            >
+              <Text style={styles.headerAdminText}>Logout</Text>
+            </TouchableOpacity>
+          </View>
         </View>
 
         {/* CHAT AREA */}
@@ -164,7 +245,6 @@ export default function App() {
           <View style={styles.modalView}>
             <Text style={styles.modalTitle}>Knowledge Vault</Text>
             
-            {/* UPDATED: Added a clear heading for the content box */}
             <Text style={styles.inputLabel}>Document Content:</Text>
             <TextInput
               style={[styles.modalInputBox, styles.modalTextArea]}
@@ -172,19 +252,18 @@ export default function App() {
               placeholderTextColor="#bfbfbf"
               multiline={true}
               numberOfLines={6}
-              textAlignVertical="top" // Forces text to start at the top on Android
-              secureTextEntry={false} // GUARANTEES words, not dots
+              textAlignVertical="top" 
+              secureTextEntry={false} 
               value={uploadContent}
               onChangeText={setUploadContent}
             />
             
-            {/* UPDATED: Added a clear heading for the password box */}
             <Text style={styles.inputLabel}>Admin Password:</Text>
             <TextInput
               style={styles.modalInputBox}
               placeholder="Enter password..."
               placeholderTextColor="#bfbfbf"
-              secureTextEntry={false} // FALSE = Shows words. TRUE = Shows dots.
+              secureTextEntry={false} 
               value={adminPassword}
               onChangeText={setAdminPassword}
             />
@@ -211,28 +290,19 @@ export default function App() {
           </View>
         </View>
       </Modal>
-
     </SafeAreaView>
   );
 }
 
 // === STYLESHEET ===
 const styles = StyleSheet.create({
+  // Chat Styles
   container: { flex: 1, backgroundColor: '#1e1e2e' },
   keyboardAvoid: { flex: 1 },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    padding: 20,
-    paddingTop: 50,
-    backgroundColor: '#282a36',
-    alignItems: 'center',
-    borderBottomWidth: 1,
-    borderBottomColor: '#444',
-  },
+  header: { flexDirection: 'row', justifyContent: 'space-between', padding: 20, paddingTop: 50, backgroundColor: '#282a36', alignItems: 'center', borderBottomWidth: 1, borderBottomColor: '#444' },
   headerText: { color: '#fff', fontSize: 20, fontWeight: 'bold' },
   headerAdminButton: { backgroundColor: '#44475a', padding: 8, borderRadius: 5 },
-  headerAdminText: { color: '#f8f8f2', fontSize: 14 },
+  headerAdminText: { color: '#f8f8f2', fontSize: 14, fontWeight: 'bold' },
   chatArea: { flex: 1, padding: 15 },
   aiBubble: { backgroundColor: '#383a59', padding: 15, borderRadius: 10, marginBottom: 10, alignSelf: 'flex-start', maxWidth: '80%' },
   aiText: { color: '#fff', fontSize: 16 },
@@ -249,19 +319,18 @@ const styles = StyleSheet.create({
   modalOverlay: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.7)' },
   modalView: { width: '90%', backgroundColor: '#282a36', borderRadius: 20, padding: 25, alignItems: 'stretch', shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.25, shadowRadius: 4, elevation: 5 },
   modalTitle: { color: '#fff', fontSize: 22, fontWeight: 'bold', marginBottom: 20, textAlign: 'center' },
-  
-  // Dedicated style for Modal inputs to force visibility against Dark Mode
-  modalInputBox: { 
-    backgroundColor: '#44475a', 
-    color: '#f8f8f2',           
-    padding: 12, 
-    borderRadius: 10, 
-    fontSize: 16, 
-    borderWidth: 1, 
-    borderColor: '#6272a4' 
-  },
-  
+  modalInputBox: { backgroundColor: '#44475a', color: '#f8f8f2', padding: 12, borderRadius: 10, fontSize: 16, borderWidth: 1, borderColor: '#6272a4' },
   modalTextArea: { height: 140, textAlignVertical: 'top', marginBottom: 20 }, 
   inputLabel: { color: '#bd93f9', fontSize: 14, fontWeight: 'bold', marginBottom: 8, marginLeft: 5 }, 
-  modalButtonRow: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 15 }
+  modalButtonRow: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 15 },
+
+  // Auth Styles
+  authContainer: { flex: 1, backgroundColor: '#1e1e2e', justifyContent: 'center', padding: 20 },
+  authTitle: { color: '#fff', fontSize: 32, fontWeight: 'bold', textAlign: 'center', marginBottom: 10 },
+  authSubtitle: { color: '#888', fontSize: 16, textAlign: 'center', marginBottom: 40 },
+  authInput: { backgroundColor: '#282a36', color: '#fff', padding: 15, borderRadius: 10, fontSize: 16, marginBottom: 15, borderWidth: 1, borderColor: '#44475a' },
+  primaryBtn: { backgroundColor: '#bd93f9', padding: 15, borderRadius: 10, alignItems: 'center', marginTop: 10 },
+  btnText: { color: '#fff', fontSize: 18, fontWeight: 'bold' },
+  secondaryBtn: { padding: 15, borderRadius: 10, alignItems: 'center', marginTop: 10 },
+  secondaryBtnText: { color: '#bd93f9', fontSize: 16, fontWeight: 'bold' }
 });
