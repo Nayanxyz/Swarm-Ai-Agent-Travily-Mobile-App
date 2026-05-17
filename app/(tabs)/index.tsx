@@ -102,29 +102,34 @@ export default function App() {
     }
   };
 
-  // === NEW: FETCH HISTORY FROM SERVER ===
+// === 2. UPGRADED FETCH HISTORY WITH TELEMETRY LOGS ===
   const fetchHistory = async (userId: string) => {
     try {
-      // 1. Knock on the new Python GET door
+      console.log(`[NETWORK LOG] Fetch truck departing for: /history/${userId}`);
       const response = await fetch(`https://swarm-api-super-agent-travily.onrender.com/history/${userId}`);
       const result = await response.json();
 
+      // TELEMETRY: Print out exactly what the server responded with
+      console.log("[NETWORK LOG] Raw server payload response status:", result.status);
+      console.log("[NETWORK LOG] Number of rows received:", result.data ? result.data.length : 0);
+
       if (response.ok && result.status === 'success') {
-        // 2. The Translator: The database uses 'role' and 'content'. 
-        // Your UI uses 'sender' and 'text'. We must translate the data format!
+        // Translate backend database keys to frontend UI naming conventions
         const formattedHistory = result.data.map((msg: { role: string, content: string }, index: number) => ({
-          id: `history-${index}`, // Give it a unique ID for React
+          id: `history-${index}`, 
           text: msg.content,
           sender: msg.role === 'assistant' ? 'ai' : 'user'
         }));
 
-        // 3. Inject the past messages into the screen!
         if (formattedHistory.length > 0) {
+          console.log(`[UI UPDATE] Successfully injecting ${formattedHistory.length} messages into bubbles.`);
           setMessages(formattedHistory);
+        } else {
+          console.log("[UI UPDATE] History response was successful but empty. Keeping default greeting.");
         }
       }
     } catch (error) {
-      console.log("Could not load history:", error);
+      console.log("❌ [CRITICAL CODE BREAK] Could not load history:", error);
     }
   };
 
