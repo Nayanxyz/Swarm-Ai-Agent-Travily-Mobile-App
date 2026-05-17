@@ -28,7 +28,7 @@ export default function App() {
 
   const scrollViewRef = useRef<ScrollView>(null);
 
-  // === 1. BOOT SEQUENCE: CHECK FOR SAVED LOGIN ===
+// === 1. BOOT SEQUENCE: CHECK FOR SAVED LOGIN ===
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
@@ -36,6 +36,14 @@ export default function App() {
 
     supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
+      
+      // THE ARCHITECTURAL FIX: Wiping the phone's local RAM on logout
+      if (!session) {
+        setMessages([
+          { id: '1', text: 'Hello User! Mera naam Jango hai, Kya seva kr skta hu?', sender: 'ai' }
+        ]);
+        setInputText(''); // Clear the input box just in case
+      }
     });
   }, []);
 
