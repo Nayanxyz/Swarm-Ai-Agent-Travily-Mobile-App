@@ -2,7 +2,8 @@ import { Session } from '@supabase/supabase-js';
 import React, { useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator, Alert, KeyboardAvoidingView, Modal, Platform,
-  SafeAreaView, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View
+  SafeAreaView,
+  StyleSheet, Text, TextInput, TouchableOpacity, View
 } from 'react-native';
 import { supabase } from './supabase'; // Ensure this path points to the file you created in Step 2
 
