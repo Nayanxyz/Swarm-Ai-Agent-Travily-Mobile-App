@@ -1,5 +1,5 @@
 import { Session } from '@supabase/supabase-js';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   ActivityIndicator, Alert,
   FlatList,
@@ -33,7 +33,6 @@ export default function App() {
   const [adminPassword, setAdminPassword] = useState('');
   const [isUploading, setIsUploading] = useState(false);
 
-  const scrollViewRef = useRef<ScrollView>(null);
 
 // === 1. UPGRADED BOOT SEQUENCE: SINGLE-SOURCE LISTENER ===
   useEffect(() => {
@@ -46,11 +45,13 @@ export default function App() {
         fetchHistory(session.user.id);
       } else if (event === 'SIGNED_OUT') {
         console.log("[AUTH LOGOUT] Clearing memory via Janitor sequence.");
-        // THE JANITOR: Only runs when explicitly logging out
+        // THE JANITOR: Wipes all memory and resets the page counters to zero
         setMessages([
           { id: '1', text: 'Hello User! Mera naam Jango hai, Kya seva kr skta hu?', sender: 'ai' }
         ]);
         setInputText('');
+        setOffset(0);               // <--- added
+        setHasMoreHistory(true);    // <--- added 
       }
     });
 
