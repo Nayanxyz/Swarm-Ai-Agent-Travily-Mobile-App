@@ -134,8 +134,13 @@ export default function App() {
         }));
 
         if (currentOffset === 0) {
-          // Fresh login
-          setMessages(formattedHistory);
+          // Fresh login: Only overwrite if they actually have history!
+          if (formattedHistory.length > 0) {
+            setMessages(formattedHistory);
+          } else {
+            // Brand new user! Ensure the greeting stays.
+            setMessages([{ id: '1', text: 'Hello User! Mera naam Jango hai, Kya seva kr skta hu?', sender: 'ai' }]);
+          }
         } else {
           // Scrolling up: Append older messages to the existing list
           setMessages(prev => [...prev, ...formattedHistory]);
