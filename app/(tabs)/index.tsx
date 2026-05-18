@@ -154,7 +154,7 @@ export default function App() {
     const userMessageText = inputText;
     const newUserMsg = { id: Date.now().toString(), text: userMessageText, sender: 'user' };
     
-    setMessages((prevMessages) => [...prevMessages, newUserMsg]);
+    setMessages((prevMessages) => [newUserMsg, ...prevMessages]);
     setInputText('');
     setIsLoading(true);
 
