@@ -174,7 +174,7 @@ export default function App() {
         text: data.final_answer || "Sorry, koi text nahi mila.", 
         sender: 'ai' 
       };
-      setMessages((prevMessages) => [...prevMessages, newAiMsg]);
+      setMessages((prevMessages) => [newAiMsg, ...prevMessages]);
 
     } catch (error) {
       const errorMsg = { id: Date.now().toString(), text: "Sorry bhai, server se connection toot gaya! 🔌", sender: 'ai' };
