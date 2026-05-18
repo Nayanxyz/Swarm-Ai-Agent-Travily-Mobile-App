@@ -257,7 +257,7 @@ export default function App() {
           </View>
         </View>
 
-{/* CHAT AREA (UPGRADED TO INVERTED FLATLIST) */}
+        {/* CHAT AREA (UPGRADED TO INVERTED FLATLIST) */}
         <FlatList 
           style={styles.chatArea}
           data={messages}
