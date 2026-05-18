@@ -14,6 +14,7 @@ export default function App() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [authLoading, setAuthLoading] = useState(false);
+  const [isLoginMode, setIsLoginMode] = useState(true); // NEW: Tracks which screen to show
 
   // --- CHAT STATE ---
   const [messages, setMessages] = useState([
