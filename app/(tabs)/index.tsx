@@ -107,34 +107,43 @@ export default function App() {
     }
   };
 
-// === 2. UPGRADED FETCH HISTORY WITH TELEMETRY LOGS ===
-  const fetchHistory = async (userId: string) => {
+// === UPGRADED: FETCH HISTORY WITH PAGINATION ===
+  const fetchHistory = async (userId: string, currentOffset: number = 0) => {
+    if (!hasMoreHistory && currentOffset !== 0) return; // Stop if there is no more history
+
+    if (currentOffset > 0) setIsLoadingMore(true);
+
     try {
-      console.log(`[NETWORK LOG] Fetch truck departing for: /history/${userId}`);
-      const response = await fetch(`https://swarm-api-super-agent-travily.onrender.com/history/${userId}`);
+      console.log(`[NETWORK] Fetching history from offset: ${currentOffset}`);
+      const response = await fetch(`https://swarm-api-super-agent-travily.onrender.com/history/${userId}?limit=15&offset=${currentOffset}`);
       const result = await response.json();
 
-      // TELEMETRY: Print out exactly what the server responded with
-      console.log("[NETWORK LOG] Raw server payload response status:", result.status);
-      console.log("[NETWORK LOG] Number of rows received:", result.data ? result.data.length : 0);
-
       if (response.ok && result.status === 'success') {
-        // Translate backend database keys to frontend UI naming conventions
-        const formattedHistory = result.data.map((msg: { role: string, content: string }, index: number) => ({
-          id: `history-${index}`, 
+        const fetchedMessages = result.data;
+        
+        // If the server returns less than 15, we hit the very beginning of the chat
+        if (fetchedMessages.length < 15) setHasMoreHistory(false);
+
+        const formattedHistory = fetchedMessages.map((msg: { role: string, content: string }, index: number) => ({
+          id: `history-${currentOffset}-${index}`, 
           text: msg.content,
           sender: msg.role === 'assistant' ? 'ai' : 'user'
         }));
 
-        if (formattedHistory.length > 0) {
-          console.log(`[UI UPDATE] Successfully injecting ${formattedHistory.length} messages into bubbles.`);
+        if (currentOffset === 0) {
+          // Fresh login
           setMessages(formattedHistory);
         } else {
-          console.log("[UI UPDATE] History response was successful but empty. Keeping default greeting.");
+          // Scrolling up: Append older messages to the existing list
+          setMessages(prev => [...prev, ...formattedHistory]);
         }
+        
+        setOffset(currentOffset + 15);
       }
     } catch (error) {
-      console.log("❌ [CRITICAL CODE BREAK] Could not load history:", error);
+      console.log("Could not load history:", error);
+    } finally {
+      setIsLoadingMore(false);
     }
   };
 
