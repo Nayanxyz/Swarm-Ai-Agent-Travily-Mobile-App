@@ -1,8 +1,9 @@
 import { Session } from '@supabase/supabase-js';
 import React, { useEffect, useRef, useState } from 'react';
 import {
-  ActivityIndicator, Alert, KeyboardAvoidingView, Modal, Platform,
-  SafeAreaView,
+  ActivityIndicator, Alert,
+  FlatList,
+  KeyboardAvoidingView, Modal, Platform, SafeAreaView,
   StyleSheet, Text, TextInput, TouchableOpacity, View
 } from 'react-native';
 import { supabase } from './supabase'; // Ensure this path points to the file you created in Step 2
@@ -256,27 +257,47 @@ export default function App() {
           </View>
         </View>
 
-        {/* CHAT AREA */}
-        <ScrollView 
+{/* CHAT AREA (UPGRADED TO INVERTED FLATLIST) */}
+        <FlatList 
           style={styles.chatArea}
-          ref={scrollViewRef}
-          onContentSizeChange={() => scrollViewRef.current?.scrollToEnd({ animated: true })}
-        >
-          {messages.map((msg) => (
-            <View key={msg.id} style={msg.sender === 'user' ? styles.userBubble : styles.aiBubble}>
+          data={messages}
+          inverted={true} // THE MAGIC: Flips the list upside down! 0 is bottom.
+          keyExtractor={(item) => item.id}
+          
+          // 1. How to draw the chat bubbles
+          renderItem={({ item: msg }) => (
+            <View style={msg.sender === 'user' ? styles.userBubble : styles.aiBubble}>
               <Text style={msg.sender === 'user' ? styles.userText : styles.aiText}>
                 {msg.text}
               </Text>
             </View>
-          ))}
-          
-          {isLoading && (
-            <View style={styles.loadingBubble}>
-              <ActivityIndicator size="small" color="#bd93f9" />
-              <Text style={styles.loadingText}>Jango soch raha hai...</Text>
-            </View>
           )}
-        </ScrollView>
+
+          // 2. What happens when the user scrolls upwards
+          onEndReached={() => {
+            if (session?.user?.id && hasMoreHistory && !isLoadingMore) {
+              fetchHistory(session.user.id, offset);
+            }
+          }}
+          onEndReachedThreshold={0.1} // Trigger when 10% away from the oldest message
+
+          // 3. The Top Loading Spinner (for fetching older history)
+          ListFooterComponent={
+            isLoadingMore ? (
+              <ActivityIndicator size="small" color="#bd93f9" style={{ marginVertical: 20 }} />
+            ) : null
+          }
+
+          // 4. The Bottom Loading Spinner (for Jango thinking)
+          ListHeaderComponent={
+            isLoading ? (
+              <View style={styles.loadingBubble}>
+                <ActivityIndicator size="small" color="#bd93f9" />
+                <Text style={styles.loadingText}>Jango soch raha hai...</Text>
+              </View>
+            ) : null
+          }
+        />
 
         {/* INPUT AREA */}
         <View style={styles.inputArea}>
