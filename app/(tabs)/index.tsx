@@ -178,7 +178,7 @@ export default function App() {
 
     } catch (error) {
       const errorMsg = { id: Date.now().toString(), text: "Sorry bhai, server se connection toot gaya! 🔌", sender: 'ai' };
-      setMessages((prevMessages) => [...prevMessages, errorMsg]);
+      setMessages((prevMessages) => [errorMsg, ...prevMessages]);
     } finally {
       setIsLoading(false);
     }
