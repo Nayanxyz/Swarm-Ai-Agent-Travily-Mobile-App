@@ -19,6 +19,11 @@ export default function App() {
   ]);
   const [inputText, setInputText] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+
+  // --- PAGINATION STATE ---
+  const [offset, setOffset] = useState(0); 
+  const [hasMoreHistory, setHasMoreHistory] = useState(true);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
   
   // --- ADMIN UPLOAD STATE ---
   const [isModalVisible, setIsModalVisible] = useState(false);
