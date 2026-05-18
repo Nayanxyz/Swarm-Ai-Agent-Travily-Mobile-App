@@ -193,14 +193,18 @@ export default function App() {
     }
   };
 
-  // ==========================================
-  // RENDER 1: LOGIN SCREEN (If user is not logged in)
+// ==========================================
+  // RENDER 1: AUTHENTICATION SCREEN
   // ==========================================
   if (!session || !session.user) {
     return (
       <View style={styles.authContainer}>
-        <Text style={styles.authTitle}>Welcome !</Text>
-        <Text style={styles.authSubtitle}>Sign in to access your secure vault.</Text>
+        <Text style={styles.authTitle}>
+          {isLoginMode ? 'Welcome Back!' : 'Create Account'}
+        </Text>
+        <Text style={styles.authSubtitle}>
+          {isLoginMode ? 'Sign in to access your secure vault.' : 'Join the Swarm AI network.'}
+        </Text>
         
         <TextInput
           style={styles.authInput}
@@ -220,14 +224,27 @@ export default function App() {
           secureTextEntry={true}
         />
         
-        <TouchableOpacity style={styles.primaryBtn} onPress={signInWithEmail} disabled={authLoading}>
-          <Text style={styles.btnText}>{authLoading ? 'Loading...' : 'Sign In'}</Text>
+        {/* Dynamic Primary Button */}
+        <TouchableOpacity 
+          style={styles.primaryBtn} 
+          onPress={isLoginMode ? signInWithEmail : signUpWithEmail} 
+          disabled={authLoading}
+        >
+          <Text style={styles.btnText}>
+            {authLoading ? 'Loading...' : (isLoginMode ? 'Sign In' : 'Sign Up')}
+          </Text>
         </TouchableOpacity>
         
-        <TouchableOpacity style={styles.secondaryBtn} onPress={signUpWithEmail} disabled={authLoading}>
-          <Text style={styles.secondaryBtnText}>Create Account</Text>
+        {/* The Mode Switcher */}
+        <TouchableOpacity 
+          style={styles.secondaryBtn} 
+          onPress={() => setIsLoginMode(!isLoginMode)} 
+          disabled={authLoading}
+        >
+          <Text style={styles.secondaryBtnText}>
+            {isLoginMode ? "Don't have an account? Sign Up" : "Already have an account? Sign In"}
+          </Text>
         </TouchableOpacity>
-        <Text style={styles.authSubtitle}>create account if new user.</Text>
       </View>
     );
   }
