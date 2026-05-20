@@ -203,7 +203,7 @@ export default function App() {
           {isLoginMode ? 'Welcome Back!' : 'Create Account'}
         </Text>
         <Text style={styles.authSubtitle}>
-          {isLoginMode ? 'Sign in to access your secure vault.' : 'Join the Swarm AI network.'}
+          {isLoginMode ? 'Sign in to access your secure vault.' : 'Join the Jango network.'}
         </Text>
         
         <TextInput
