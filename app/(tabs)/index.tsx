@@ -200,7 +200,7 @@ export default function App() {
     return (
       <View style={styles.authContainer}>
         <Text style={styles.authTitle}>
-          {isLoginMode ? 'Welcome Back!' : 'Create Account'}
+          {isLoginMode ? 'Welcome!' : 'Create Account'}
         </Text>
         <Text style={styles.authSubtitle}>
           {isLoginMode ? 'Sign in to access your secure vault.' : 'Join the Jango network.'}
