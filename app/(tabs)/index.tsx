@@ -262,7 +262,7 @@ export default function App() {
         
         {/* HEADER */}
         <View style={styles.header}>
-          <Text style={styles.headerText}>Swarm AI 🧠</Text>
+          <Text style={styles.headerText}>Jango AI🧠</Text>
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
             <TouchableOpacity 
               style={[styles.headerAdminButton, { marginRight: 10 }]} 
