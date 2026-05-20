@@ -352,7 +352,7 @@ export default function App() {
             <Text style={styles.inputLabel}>Document Content:</Text>
             <TextInput
               style={[styles.modalInputBox, styles.modalTextArea]}
-              placeholder="Paste company data, facts, or rules here..."
+              placeholder="input data, facts, or rules here..."
               placeholderTextColor="#bfbfbf"
               multiline={true}
               numberOfLines={6}
