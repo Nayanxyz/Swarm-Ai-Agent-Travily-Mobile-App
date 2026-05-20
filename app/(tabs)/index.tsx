@@ -316,7 +316,7 @@ export default function App() {
           ListHeaderComponent={
             isLoading ? (
               <View style={styles.loadingBubble}>
-                <ActivityIndicator size="small" color="#bd93f9" />
+                <ActivityIndicator size="small" color="#f4f2f7" />
                 <Text style={styles.loadingText}>Jango soch raha hai...</Text>
               </View>
             ) : null
