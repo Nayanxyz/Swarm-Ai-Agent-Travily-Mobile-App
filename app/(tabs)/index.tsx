@@ -268,7 +268,7 @@ export default function App() {
               style={[styles.headerAdminButton, { marginRight: 10 }]} 
               onPress={() => setIsModalVisible(true)}
             >
-              <Text style={styles.headerAdminText}>⚙️Vault</Text>
+              <Text style={styles.headerAdminText}>⚙️Add</Text>
             </TouchableOpacity>
             
             {/* NEW: Logout Button */}
