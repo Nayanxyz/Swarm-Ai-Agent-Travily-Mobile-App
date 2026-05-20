@@ -276,7 +276,7 @@ export default function App() {
               style={[styles.headerAdminButton, { backgroundColor: '#ff5555' }]} 
               onPress={() => supabase.auth.signOut()}
             >
-              <Text style={styles.headerAdminText}>Logout</Text>
+              <Text style={styles.headerAdminText}>LogOut</Text>
             </TouchableOpacity>
           </View>
         </View>
