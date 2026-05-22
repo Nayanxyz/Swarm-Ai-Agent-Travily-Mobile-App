@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "swarm-mobile-app",
+    "name": "jango-ai",
     "slug": "swarm-mobile-app",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -19,7 +19,8 @@
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "package": "com.nayanxyz.swarmmobileapp"
     },
     "web": {
       "output": "single",
@@ -43,6 +44,12 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "8dde3a28-9cd8-47d5-abf5-26efe2831c71"
+      }
     }
   }
 }
