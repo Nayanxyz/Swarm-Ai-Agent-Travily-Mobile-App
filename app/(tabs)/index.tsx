@@ -134,8 +134,8 @@ export default function App() {
     
     // 1. Verify the OTP
     const { error: verifyError } = await supabase.auth.verifyOtp({
-      email,
-      token: otpToken,
+      email: email.trim(),      // THE FIX: Trim the email
+      token: otpToken.trim(),   // THE FIX: Trim the pasted code
       type: 'recovery',
     });
 
