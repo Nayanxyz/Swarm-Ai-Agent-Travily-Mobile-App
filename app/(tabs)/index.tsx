@@ -112,14 +112,15 @@ export default function App() {
       return;
     }
     setAuthLoading(true);
-    const { error } = await supabase.auth.resetPasswordForEmail(email);
+    // THE FIX: Trim the email before requesting the reset
+    const { error } = await supabase.auth.resetPasswordForEmail(email.trim());
     setAuthLoading(false);
 
     if (error) {
       Alert.alert('Error', error.message);
     } else {
       Alert.alert('OTP Sent', 'Check your email for the 6-digit recovery code.');
-      setIsOtpSent(true); // This variable flips the UI to the next screen!
+      setIsOtpSent(true); 
     }
   }
 
