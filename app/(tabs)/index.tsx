@@ -153,8 +153,11 @@ export default function App() {
     if (updateError) {
       Alert.alert('Update Failed', updateError.message);
     } else {
+      // THE FIX: Force them out so they must log in with the newly minted password
+      await supabase.auth.signOut(); 
+      
       Alert.alert('Success', 'Password updated! You can now sign in.');
-      // Reset all states back to the standard Login screen
+      
       setIsOtpSent(false);
       setIsForgotPasswordMode(false);
       setOtpToken('');
