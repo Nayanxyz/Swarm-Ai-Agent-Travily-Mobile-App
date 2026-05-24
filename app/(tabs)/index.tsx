@@ -283,7 +283,7 @@ export default function App() {
 // ==========================================
   // RENDER 1: AUTHENTICATION SCREEN
   // ==========================================
-  if (!session || !session.user) {
+  if (!session || !session.user || isForgotPasswordMode) {
     
     // --- FORGOT PASSWORD UI ROUTE ---
     if (isForgotPasswordMode) {
