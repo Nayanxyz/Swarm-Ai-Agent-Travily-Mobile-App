@@ -76,6 +76,7 @@ export default function App() {
 
   async function signUpWithEmail() {
     // 1. Basic format validation check
+    const cleanEmail = email.trim();
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       Alert.alert("Invalid Email", "Please enter a valid email address structure (e.g., name@domain.com).");
