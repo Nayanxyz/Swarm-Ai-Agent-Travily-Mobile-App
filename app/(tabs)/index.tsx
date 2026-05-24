@@ -6,7 +6,12 @@ import {
   KeyboardAvoidingView, Modal, Platform, SafeAreaView,
   StyleSheet, Text, TextInput, TouchableOpacity, View
 } from 'react-native';
-import { supabase } from './supabase'; // Ensure this path points to the file you created in Step 2
+import { supabase } from './supabase';
+
+// PATCHED FLAW 2: Environment variable setup.
+// Create a .env file and add EXPO_PUBLIC_API_URL=https://swarm-api-super-agent-travily.onrender.com
+// This prevents you from having to rewrite code when moving from local to production.
+const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'https://swarm-api-super-agent-travily.onrender.com';
 
 export default function App() {
   // --- AUTH STATE ---
@@ -14,7 +19,7 @@ export default function App() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [authLoading, setAuthLoading] = useState(false);
-  const [isLoginMode, setIsLoginMode] = useState(true); // NEW: Tracks which screen to show
+  const [isLoginMode, setIsLoginMode] = useState(true); 
 
   // --- FORGOT PASSWORD STATE ---
   const [isForgotPasswordMode, setIsForgotPasswordMode] = useState(false);
@@ -40,29 +45,24 @@ export default function App() {
   const [adminPassword, setAdminPassword] = useState('');
   const [isUploading, setIsUploading] = useState(false);
 
-
-// === 1. UPGRADED BOOT SEQUENCE: SINGLE-SOURCE LISTENER ===
+  // === 1. BOOT SEQUENCE: SINGLE-SOURCE LISTENER ===
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      console.log(`[AUTH EVENT] System detected state: ${event}`);
       setSession(session);
       
       if (session?.user?.id && (event === 'SIGNED_IN' || event === 'INITIAL_SESSION')) {
-        console.log(`[AUTH SUCCESS] Launching history pull for user: ${session.user.id}`);
         fetchHistory(session.user.id);
       } else if (event === 'SIGNED_OUT') {
-        console.log("[AUTH LOGOUT] Clearing memory via Janitor sequence.");
         // THE JANITOR: Wipes all memory and resets the page counters to zero
         setMessages([
           { id: '1', text: 'Hello User! Mera naam Jango hai, Kya seva kr skta hu?', sender: 'ai' }
         ]);
         setInputText('');
-        setOffset(0);               // <--- added
-        setHasMoreHistory(true);    // <--- added 
+        setOffset(0);              
+        setHasMoreHistory(true);    
       }
     });
 
-    // Cleanup subscription when the app unmounts to prevent memory leaks
     return () => subscription.unsubscribe();
   }, []);
 
@@ -75,19 +75,15 @@ export default function App() {
   }
 
   async function signUpWithEmail() {
-    // 1. Basic format validation check
     const cleanEmail = email.trim();
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(cleanEmail)) {
-      Alert.alert("Invalid Email", "Please enter a valid email address structure (e.g., name@domain.com).");
+      Alert.alert("Invalid Email", "Please enter a valid email address structure.");
       return;
     }
 
     setAuthLoading(true);
-    
-    // 2. Fire the signup to Supabase
     const { error } = await supabase.auth.signUp({ email: cleanEmail, password });
-    
     setAuthLoading(false);
 
     if (error) {
@@ -95,24 +91,19 @@ export default function App() {
       return;
     }
 
-    // 3. The new verification UX rule
     Alert.alert(
       'Verify Your Account', 
       'Account created successfully! We have sent a confirmation link to your email. Please verify it before trying to log in.'
     );
-    
-    // 4. Switch the UI back to Login mode so they can log in AFTER clicking the email link
     setIsLoginMode(true); 
   }
 
-  // === FORGOT PASSWORD FUNCTIONS ===
   async function handleSendOTP() {
     if (!email) {
       Alert.alert("Error", "Please enter your email address first.");
       return;
     }
     setAuthLoading(true);
-    // THE FIX: Trim the email before requesting the reset
     const { error } = await supabase.auth.resetPasswordForEmail(email.trim());
     setAuthLoading(false);
 
@@ -132,10 +123,9 @@ export default function App() {
     
     setAuthLoading(true);
     
-    // 1. Verify the OTP
     const { error: verifyError } = await supabase.auth.verifyOtp({
-      email: email.trim(),      // THE FIX: Trim the email
-      token: otpToken.trim(),   // THE FIX: Trim the pasted code
+      email: email.trim(),      
+      token: otpToken.trim(),   
       type: 'recovery',
     });
 
@@ -145,7 +135,6 @@ export default function App() {
       return;
     }
 
-    // 2. If OTP is valid, overwrite the password
     const { error: updateError } = await supabase.auth.updateUser({
       password: newPasswordReset
     });
@@ -153,16 +142,11 @@ export default function App() {
     setAuthLoading(false);
 
     if (updateError) {
-      // THE FIX: Forcefully destroy the temporary session if the password fails Supabase's rules
       await supabase.auth.signOut(); 
-      
       Alert.alert('Update Failed', updateError.message);
     } else {
-      // Force them out so they must log in with the newly minted password
       await supabase.auth.signOut(); 
-      
       Alert.alert('Success', 'Password updated! You can now sign in.');
-      
       setIsOtpSent(false);
       setIsForgotPasswordMode(false);
       setOtpToken('');
@@ -180,18 +164,24 @@ export default function App() {
 
     setIsUploading(true);
     try {
-      const response = await fetch("https://swarm-api-super-agent-travily.onrender.com/upload-doc", {
+      const response = await fetch(`${API_BASE_URL}/upload-doc`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           admin_password: adminPassword,
-          user_id: session?.user?.id, // ARCHITECTURAL FIX: Attaching the real UUID to the vault upload
+          user_id: session?.user?.id, 
           content: uploadContent
         })
       });
+      
+      // PATCHED FLAW 3: Validate response before trying to parse JSON
+      if (!response.ok) {
+        throw new Error(`Server returned status: ${response.status}`);
+      }
+
       const result = await response.json();
       
-      if (response.ok && result.status === 'success') {
+      if (result.status === 'success') {
         Alert.alert("Success", "Knowledge secured in vault.");
         setUploadContent('');
         setAdminPassword('');
@@ -200,27 +190,32 @@ export default function App() {
         Alert.alert("Upload Failed", result.message || "Unauthorized.");
       }
     } catch (error) {
-      Alert.alert("Network Error", "Could not reach the server.");
+      Alert.alert("Network Error", "Could not reach the server or invalid response.");
     } finally {
       setIsUploading(false);
     }
   };
 
-// === UPGRADED: FETCH HISTORY WITH PAGINATION ===
+  // === 4. FETCH HISTORY WITH PAGINATION ===
   const fetchHistory = async (userId: string, currentOffset: number = 0) => {
-    if (!hasMoreHistory && currentOffset !== 0) return; // Stop if there is no more history
+    // PATCHED FLAW 1: Guard clause prevents rapid-fire identical requests
+    if ((!hasMoreHistory && currentOffset !== 0) || isLoadingMore) return; 
 
     if (currentOffset > 0) setIsLoadingMore(true);
 
     try {
-      console.log(`[NETWORK] Fetching history from offset: ${currentOffset}`);
-      const response = await fetch(`https://swarm-api-super-agent-travily.onrender.com/history/${userId}?limit=15&offset=${currentOffset}`);
+      const response = await fetch(`${API_BASE_URL}/history/${userId}?limit=15&offset=${currentOffset}`);
+      
+      // PATCHED FLAW 3: Validate response
+      if (!response.ok) {
+         throw new Error(`Failed to fetch history. Status: ${response.status}`);
+      }
+
       const result = await response.json();
 
-      if (response.ok && result.status === 'success') {
+      if (result.status === 'success') {
         const fetchedMessages = result.data;
         
-        // If the server returns less than 15, we hit the very beginning of the chat
         if (fetchedMessages.length < 15) setHasMoreHistory(false);
 
         const formattedHistory = fetchedMessages.map((msg: { role: string, content: string }, index: number) => ({
@@ -230,15 +225,12 @@ export default function App() {
         }));
 
         if (currentOffset === 0) {
-          // THE FIX: We must forcefully append the hardcoded greeting to the end of the fetched history
-          // so it always appears at the very top of the chat, regardless of what the database says.
           const historyWithGreeting = [
             ...formattedHistory, 
             { id: '1', text: 'Hello User! Mera naam Jango hai, Kya seva kr skta hu?', sender: 'ai' }
           ];
           setMessages(historyWithGreeting);
         } else {
-          // Scrolling up: Append older messages to the existing list
           setMessages(prev => [...prev, ...formattedHistory]);
         }
         
@@ -251,56 +243,65 @@ export default function App() {
     }
   };
 
-  // === 4. CHAT SEND FUNCTION ===
+  // === 5. CHAT SEND FUNCTION ===
   const handleSend = async () => {
     if (inputText.trim() === '' || !session?.user) return; 
 
     const userMessageText = inputText;
-    const newUserMsg = { id: Date.now().toString(), text: userMessageText, sender: 'user' };
+    
+    // PATCHED FLAW 4: Robust Unique ID generation
+    const uniqueUserId = Date.now().toString() + Math.random().toString(36).substring(7);
+    const newUserMsg = { id: uniqueUserId, text: userMessageText, sender: 'user' };
     
     setMessages((prevMessages) => [newUserMsg, ...prevMessages]);
     setInputText('');
     setIsLoading(true);
 
     try {
-      const response = await fetch('https://swarm-api-super-agent-travily.onrender.com/chat', {
+      const response = await fetch(`${API_BASE_URL}/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
-          user_id: session.user.id, // ARCHITECTURAL FIX: Passing cryptographic UUID to the brain
+          user_id: session.user.id,
           prompt: userMessageText 
         }),
       });
 
+      // PATCHED FLAW 3: Validate response
+      if (!response.ok) {
+        throw new Error(`Chat API failed with status ${response.status}`);
+      }
+
       const data = await response.json();
+      
+      // PATCHED FLAW 4: Robust Unique ID generation
+      const uniqueAiId = Date.now().toString() + Math.random().toString(36).substring(7);
       const newAiMsg = { 
-        id: Date.now().toString(), 
+        id: uniqueAiId, 
         text: data.final_answer || "Sorry, koi text nahi mila.", 
         sender: 'ai' 
       };
       setMessages((prevMessages) => [newAiMsg, ...prevMessages]);
 
     } catch (error) {
-      const errorMsg = { id: Date.now().toString(), text: "Sorry bhai, server se connection toot gaya! 🔌", sender: 'ai' };
+      const errorUniqueId = Date.now().toString() + Math.random().toString(36).substring(7);
+      const errorMsg = { id: errorUniqueId, text: "Sorry bhai, server se connection toot gaya! 🔌", sender: 'ai' };
       setMessages((prevMessages) => [errorMsg, ...prevMessages]);
     } finally {
       setIsLoading(false);
     }
   };
 
-// ==========================================
+  // ==========================================
   // RENDER 1: AUTHENTICATION SCREEN
   // ==========================================
   if (!session || !session.user || isForgotPasswordMode) {
-    
-    // --- FORGOT PASSWORD UI ROUTE ---
     if (isForgotPasswordMode) {
       return (
         <View style={styles.authContainer}>
           <Text style={styles.authTitle}>Reset Password</Text>
           
           {!isOtpSent ? (
-            // VIEW A: Ask for Email
             <>
               <Text style={styles.authSubtitle}>Enter your email to receive a 6-digit code.</Text>
               <TextInput
@@ -317,7 +318,6 @@ export default function App() {
               </TouchableOpacity>
             </>
           ) : (
-            // VIEW B: Ask for OTP and New Password
             <>
               <Text style={styles.authSubtitle}>Enter the 6-digit code sent to your email.</Text>
               <TextInput
@@ -342,14 +342,13 @@ export default function App() {
             </>
           )}
 
-          {/* Escape Hatch Button */}
           <TouchableOpacity 
             style={styles.secondaryBtn} 
             onPress={() => {
               setIsForgotPasswordMode(false);
               setIsOtpSent(false);
-              setOtpToken('');         // THE FIX: Wipe the OTP memory
-              setNewPasswordReset(''); // THE FIX: Wipe the password memory
+              setOtpToken('');        
+              setNewPasswordReset(''); 
             }} 
             disabled={authLoading}
           >
@@ -359,7 +358,6 @@ export default function App() {
       );
     }
 
-    // --- STANDARD LOGIN / SIGNUP UI ROUTE ---
     return (
       <View style={styles.authContainer}>
         <Text style={styles.authTitle}>
@@ -407,7 +405,6 @@ export default function App() {
           </Text>
         </TouchableOpacity>
 
-        {/* THE NEW TRIGGER FOR FORGOT PASSWORD */}
         {isLoginMode && (
           <TouchableOpacity 
             style={{ marginTop: 5, alignItems: 'center' }} 
@@ -422,7 +419,7 @@ export default function App() {
   }
 
   // ==========================================
-  // RENDER 2: CHAT SCREEN (If user is logged in)
+  // RENDER 2: CHAT SCREEN 
   // ==========================================
   return (
     <SafeAreaView style={styles.container}>
@@ -432,7 +429,6 @@ export default function App() {
         keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 25}
       >   
         
-        {/* HEADER */}
         <View style={styles.header}>
           <Text style={styles.headerText}>Jango AI🧠</Text>
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
@@ -443,7 +439,6 @@ export default function App() {
               <Text style={styles.headerAdminText}>⚙️Add</Text>
             </TouchableOpacity>
             
-            {/* NEW: Logout Button */}
             <TouchableOpacity 
               style={[styles.headerAdminButton, { backgroundColor: '#ff5555' }]} 
               onPress={() => supabase.auth.signOut()}
@@ -453,14 +448,11 @@ export default function App() {
           </View>
         </View>
 
-        {/* CHAT AREA (UPGRADED TO INVERTED FLATLIST) */}
         <FlatList 
           style={styles.chatArea}
           data={messages}
-          inverted={true} // THE MAGIC: Flips the list upside down! 0 is bottom.
+          inverted={true} 
           keyExtractor={(item) => item.id}
-          
-          // 1. How to draw the chat bubbles
           renderItem={({ item: msg }) => (
             <View style={msg.sender === 'user' ? styles.userBubble : styles.aiBubble}>
               <Text style={msg.sender === 'user' ? styles.userText : styles.aiText}>
@@ -468,23 +460,17 @@ export default function App() {
               </Text>
             </View>
           )}
-
-          // 2. What happens when the user scrolls upwards
           onEndReached={() => {
             if (session?.user?.id && hasMoreHistory && !isLoadingMore) {
               fetchHistory(session.user.id, offset);
             }
           }}
-          onEndReachedThreshold={0.1} // Trigger when 10% away from the oldest message
-
-          // 3. The Top Loading Spinner (for fetching older history)
+          onEndReachedThreshold={0.1} 
           ListFooterComponent={
             isLoadingMore ? (
               <ActivityIndicator size="small" color="#bd93f9" style={{ marginVertical: 20 }} />
             ) : null
           }
-
-          // 4. The Bottom Loading Spinner (for Jango thinking)
           ListHeaderComponent={
             isLoading ? (
               <View style={styles.loadingBubble}>
@@ -495,7 +481,6 @@ export default function App() {
           }
         />
 
-        {/* INPUT AREA */}
         <View style={styles.inputArea}>
           <TextInput
             style={styles.inputBox}
@@ -510,7 +495,6 @@ export default function App() {
         </View>
       </KeyboardAvoidingView>
 
-      {/* --- ADMIN VAULT MODAL --- */}
       <Modal
         animationType="slide"
         transparent={true}
