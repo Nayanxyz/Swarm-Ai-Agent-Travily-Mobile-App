@@ -284,6 +284,72 @@ export default function App() {
   // RENDER 1: AUTHENTICATION SCREEN
   // ==========================================
   if (!session || !session.user) {
+    
+    // --- FORGOT PASSWORD UI ROUTE ---
+    if (isForgotPasswordMode) {
+      return (
+        <View style={styles.authContainer}>
+          <Text style={styles.authTitle}>Reset Password</Text>
+          
+          {!isOtpSent ? (
+            // VIEW A: Ask for Email
+            <>
+              <Text style={styles.authSubtitle}>Enter your email to receive a 6-digit code.</Text>
+              <TextInput
+                style={styles.authInput}
+                placeholder="Email address"
+                placeholderTextColor="#888"
+                value={email}
+                onChangeText={setEmail}
+                autoCapitalize="none"
+                keyboardType="email-address"
+              />
+              <TouchableOpacity style={styles.primaryBtn} onPress={handleSendOTP} disabled={authLoading}>
+                <Text style={styles.btnText}>{authLoading ? 'Sending...' : 'Send OTP'}</Text>
+              </TouchableOpacity>
+            </>
+          ) : (
+            // VIEW B: Ask for OTP and New Password
+            <>
+              <Text style={styles.authSubtitle}>Enter the 6-digit code sent to your email.</Text>
+              <TextInput
+                style={styles.authInput}
+                placeholder="6-Digit OTP"
+                placeholderTextColor="#888"
+                value={otpToken}
+                onChangeText={setOtpToken}
+                keyboardType="numeric"
+              />
+              <TextInput
+                style={styles.authInput}
+                placeholder="New Password (min 6 chars)"
+                placeholderTextColor="#888"
+                value={newPasswordReset}
+                onChangeText={setNewPasswordReset}
+                secureTextEntry={true}
+              />
+              <TouchableOpacity style={styles.primaryBtn} onPress={handleVerifyAndReset} disabled={authLoading}>
+                <Text style={styles.btnText}>{authLoading ? 'Updating...' : 'Update Password'}</Text>
+              </TouchableOpacity>
+            </>
+          )}
+
+          {/* Escape Hatch Button */}
+          <TouchableOpacity 
+            style={styles.secondaryBtn} 
+            onPress={() => {
+              setIsForgotPasswordMode(false);
+              setIsOtpSent(false);
+            }} 
+            disabled={authLoading}
+          >
+            <Text style={styles.secondaryBtnText}>Back to Login</Text>
+          </TouchableOpacity>
+        </View>
+      );
+    }
+
+    // --- STANDARD LOGIN / SIGNUP UI ROUTE ---
     return (
       <View style={styles.authContainer}>
         <Text style={styles.authTitle}>
@@ -311,7 +377,6 @@ export default function App() {
           secureTextEntry={true}
         />
         
-        {/* Dynamic Primary Button */}
         <TouchableOpacity 
           style={styles.primaryBtn} 
           onPress={isLoginMode ? signInWithEmail : signUpWithEmail} 
@@ -322,7 +387,6 @@ export default function App() {
           </Text>
         </TouchableOpacity>
         
-        {/* The Mode Switcher */}
         <TouchableOpacity 
           style={styles.secondaryBtn} 
           onPress={() => setIsLoginMode(!isLoginMode)} 
@@ -332,6 +396,17 @@ export default function App() {
             {isLoginMode ? "Don't have an account? Sign Up" : "Already have an account? Sign In"}
           </Text>
         </TouchableOpacity>
+
+        {/* THE NEW TRIGGER FOR FORGOT PASSWORD */}
+        {isLoginMode && (
+          <TouchableOpacity 
+            style={{ marginTop: 5, alignItems: 'center' }} 
+            onPress={() => setIsForgotPasswordMode(true)} 
+            disabled={authLoading}
+          >
+            <Text style={{ color: '#ff79c6', fontSize: 14, fontWeight: 'bold' }}>Forgot Password?</Text>
+          </TouchableOpacity>
+        )}
       </View>
     );
   }
