@@ -69,7 +69,7 @@ export default function App() {
   // === 2. AUTHENTICATION FUNCTIONS ===
   async function signInWithEmail() {
     setAuthLoading(true);
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
     if (error) Alert.alert('Login Failed', error.message);
     setAuthLoading(false);
   }
