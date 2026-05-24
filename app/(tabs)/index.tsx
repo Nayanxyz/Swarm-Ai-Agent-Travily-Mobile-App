@@ -74,7 +74,7 @@ export default function App() {
     setAuthLoading(false);
   }
 
-async function signUpWithEmail() {
+  async function signUpWithEmail() {
     // 1. Basic format validation check
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
@@ -102,6 +102,65 @@ async function signUpWithEmail() {
     
     // 4. Switch the UI back to Login mode so they can log in AFTER clicking the email link
     setIsLoginMode(true); 
+  }
+
+  // === FORGOT PASSWORD FUNCTIONS ===
+  async function handleSendOTP() {
+    if (!email) {
+      Alert.alert("Error", "Please enter your email address first.");
+      return;
+    }
+    setAuthLoading(true);
+    const { error } = await supabase.auth.resetPasswordForEmail(email);
+    setAuthLoading(false);
+
+    if (error) {
+      Alert.alert('Error', error.message);
+    } else {
+      Alert.alert('OTP Sent', 'Check your email for the 6-digit recovery code.');
+      setIsOtpSent(true); // This variable flips the UI to the next screen!
+    }
+  }
+
+  async function handleVerifyAndReset() {
+    if (!otpToken || !newPasswordReset) {
+      Alert.alert("Error", "Please enter the OTP and your new password.");
+      return;
+    }
+    
+    setAuthLoading(true);
+    
+    // 1. Verify the OTP
+    const { error: verifyError } = await supabase.auth.verifyOtp({
+      email,
+      token: otpToken,
+      type: 'recovery',
+    });
+
+    if (verifyError) {
+      setAuthLoading(false);
+      Alert.alert('Verification Failed', verifyError.message);
+      return;
+    }
+
+    // 2. If OTP is valid, overwrite the password
+    const { error: updateError } = await supabase.auth.updateUser({
+      password: newPasswordReset
+    });
+
+    setAuthLoading(false);
+
+    if (updateError) {
+      Alert.alert('Update Failed', updateError.message);
+    } else {
+      Alert.alert('Success', 'Password updated! You can now sign in.');
+      // Reset all states back to the standard Login screen
+      setIsOtpSent(false);
+      setIsForgotPasswordMode(false);
+      setOtpToken('');
+      setNewPasswordReset('');
+      setPassword('');
+    }
   }
 
   // === 3. THE DYNAMIC UPLOAD FUNCTION ===
