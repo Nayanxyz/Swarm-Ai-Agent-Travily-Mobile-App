@@ -151,9 +151,12 @@ export default function App() {
     setAuthLoading(false);
 
     if (updateError) {
+      // THE FIX: Forcefully destroy the temporary session if the password fails Supabase's rules
+      await supabase.auth.signOut(); 
+      
       Alert.alert('Update Failed', updateError.message);
     } else {
-      // THE FIX: Force them out so they must log in with the newly minted password
+      // Force them out so they must log in with the newly minted password
       await supabase.auth.signOut(); 
       
       Alert.alert('Success', 'Password updated! You can now sign in.');
