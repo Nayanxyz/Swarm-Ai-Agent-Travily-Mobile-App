@@ -86,7 +86,7 @@ export default function App() {
     setAuthLoading(true);
     
     // 2. Fire the signup to Supabase
-    const { error } = await supabase.auth.signUp({ email, password });
+    const { error } = await supabase.auth.signUp({ email: cleanEmail, password });
     
     setAuthLoading(false);
 
