@@ -157,13 +157,13 @@ async function signUpWithEmail() {
         }));
 
         if (currentOffset === 0) {
-          // Fresh login: Only overwrite if they actually have history!
-          if (formattedHistory.length > 0) {
-            setMessages(formattedHistory);
-          } else {
-            // Brand new user! Ensure the greeting stays.
-            setMessages([{ id: '1', text: 'Hello User! Mera naam Jango hai, Kya seva kr skta hu?', sender: 'ai' }]);
-          }
+          // THE FIX: We must forcefully append the hardcoded greeting to the end of the fetched history
+          // so it always appears at the very top of the chat, regardless of what the database says.
+          const historyWithGreeting = [
+            ...formattedHistory, 
+            { id: '1', text: 'Hello User! Mera naam Jango hai, Kya seva kr skta hu?', sender: 'ai' }
+          ];
+          setMessages(historyWithGreeting);
         } else {
           // Scrolling up: Append older messages to the existing list
           setMessages(prev => [...prev, ...formattedHistory]);
