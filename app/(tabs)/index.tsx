@@ -16,6 +16,12 @@ export default function App() {
   const [authLoading, setAuthLoading] = useState(false);
   const [isLoginMode, setIsLoginMode] = useState(true); // NEW: Tracks which screen to show
 
+  // --- FORGOT PASSWORD STATE ---
+  const [isForgotPasswordMode, setIsForgotPasswordMode] = useState(false);
+  const [isOtpSent, setIsOtpSent] = useState(false);
+  const [otpToken, setOtpToken] = useState('');
+  const [newPasswordReset, setNewPasswordReset] = useState('');
+
   // --- CHAT STATE ---
   const [messages, setMessages] = useState([
     { id: '1', text: 'Hello User! Mera naam Jango hai, Kya seva kr skta hu?', sender: 'ai' }
