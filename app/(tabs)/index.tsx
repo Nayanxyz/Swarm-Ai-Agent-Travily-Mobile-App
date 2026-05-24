@@ -68,12 +68,34 @@ export default function App() {
     setAuthLoading(false);
   }
 
-  async function signUpWithEmail() {
+async function signUpWithEmail() {
+    // 1. Basic format validation check
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      Alert.alert("Invalid Email", "Please enter a valid email address structure (e.g., name@domain.com).");
+      return;
+    }
+
     setAuthLoading(true);
+    
+    // 2. Fire the signup to Supabase
     const { error } = await supabase.auth.signUp({ email, password });
-    if (error) Alert.alert('Signup Failed', error.message);
-    else Alert.alert('Success', 'Account created! You are now logged in.');
+    
     setAuthLoading(false);
+
+    if (error) {
+      Alert.alert('Signup Failed', error.message);
+      return;
+    }
+
+    // 3. The new verification UX rule
+    Alert.alert(
+      'Verify Your Account', 
+      'Account created successfully! We have sent a confirmation link to your email. Please verify it before trying to log in.'
+    );
+    
+    // 4. Switch the UI back to Login mode so they can log in AFTER clicking the email link
+    setIsLoginMode(true); 
   }
 
   // === 3. THE DYNAMIC UPLOAD FUNCTION ===
