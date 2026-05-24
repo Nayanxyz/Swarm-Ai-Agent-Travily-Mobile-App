@@ -343,6 +343,8 @@ export default function App() {
             onPress={() => {
               setIsForgotPasswordMode(false);
               setIsOtpSent(false);
+              setOtpToken('');         // THE FIX: Wipe the OTP memory
+              setNewPasswordReset(''); // THE FIX: Wipe the password memory
             }} 
             disabled={authLoading}
           >
