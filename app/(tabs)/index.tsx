@@ -592,12 +592,68 @@ const styles = StyleSheet.create({
   modalButtonRow: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 15 },
 
   // Auth Styles
-  authContainer: { flex: 1, backgroundColor: '#1e1e2e', justifyContent: 'center', padding: 20 },
-  authTitle: { color: '#fff', fontSize: 32, fontWeight: 'bold', textAlign: 'center', marginBottom: 10 },
-  authSubtitle: { color: '#888', fontSize: 16, textAlign: 'center', marginBottom: 40 },
-  authInput: { backgroundColor: '#282a36', color: '#fff', padding: 15, borderRadius: 10, fontSize: 16, marginBottom: 15, borderWidth: 1, borderColor: '#44475a' },
-  primaryBtn: { backgroundColor: '#bd93f9', padding: 15, borderRadius: 10, alignItems: 'center', marginTop: 10 },
-  btnText: { color: '#fff', fontSize: 18, fontWeight: 'bold' },
-  secondaryBtn: { padding: 15, borderRadius: 10, alignItems: 'center', marginTop: 10 },
-  secondaryBtnText: { color: '#bd93f9', fontSize: 16, fontWeight: 'bold' }
+  // --- AUTH STYLES (UPGRADED TO ZEN OCEAN) ---
+  authContainer: { 
+    flex: 1, 
+    backgroundColor: '#0F172A', // Deep oceanic background (Calming & Professional)
+    justifyContent: 'center', 
+    padding: 20 
+  },
+  logoImage: {
+    width: 120,
+    height: 120,
+    alignSelf: 'center',
+    marginBottom: 15,
+  },
+  authTitle: { 
+    color: '#F8FAFC',          // Crisp white-off text for soft contrast
+    fontSize: 32, 
+    fontWeight: 'bold', 
+    textAlign: 'center', 
+    marginBottom: 10 
+  },
+  authSubtitle: { 
+    color: '#94A3B8',          // Muted steel text for secondary hierarchy
+    fontSize: 16, 
+    textAlign: 'center', 
+    marginBottom: 40 
+  },
+  authInput: { 
+    backgroundColor: '#1E293B', // Soft navy background for inputs (No harsh stark borders)
+    color: '#F8FAFC', 
+    padding: 15, 
+    borderRadius: 12,          // Slightly rounder corners look more modern/relaxed
+    fontSize: 16, 
+    marginBottom: 15, 
+    borderWidth: 1, 
+    borderColor: '#334155'     // Subtle input border boundary
+  },
+  primaryBtn: { 
+    backgroundColor: '#38BDF8', // Calm Sky Blue (Draws focus naturally without screaming)
+    padding: 16, 
+    borderRadius: 12, 
+    alignItems: 'center', 
+    marginTop: 10,
+    shadowColor: '#38BDF8',     // Subtle professional glow instead of neon flat color
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  btnText: { 
+    color: '#0F172A',          // Dark text on a light button provides clean readability
+    fontSize: 18, 
+    fontWeight: 'bold' 
+  },
+  secondaryBtn: { 
+    padding: 15, 
+    borderRadius: 10, 
+    alignItems: 'center', 
+    marginTop: 15 
+  },
+  secondaryBtnText: { 
+    color: '#38BDF8',          // Matching brand link color
+    fontSize: 16, 
+    fontWeight: '600' 
+  }
 });
