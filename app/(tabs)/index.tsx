@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import {
   ActivityIndicator, Alert,
   FlatList,
+  Image,
   KeyboardAvoidingView, Modal, Platform, SafeAreaView,
   StyleSheet, Text, TextInput, TouchableOpacity, View
 } from 'react-native';
@@ -360,6 +361,12 @@ export default function App() {
 
     return (
       <View style={styles.authContainer}>
+        {/* YOUR TEXT LOGO */}
+        <Image 
+          source={require('./assets/jango-logo-text.jpg')} 
+          style={styles.logoImage}
+          resizeMode="contain"
+        />
         <Text style={styles.authTitle}>
           {isLoginMode ? 'Welcome!' : 'Create Account'}
         </Text>
