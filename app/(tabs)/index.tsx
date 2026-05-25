@@ -363,7 +363,7 @@ export default function App() {
       <View style={styles.authContainer}>
         {/* YOUR TEXT LOGO */}
         <Image 
-          source={require('./assets/jango-logo-text.jpg')} 
+          source={require('./assets/jango-logo-.png')} 
           style={styles.logoImage}
           resizeMode="contain"
         />
