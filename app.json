@@ -2,7 +2,7 @@
   "expo": {
     "name": "jango-ai",
     "slug": "swarm-mobile-app",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "swarmmobileapp",
@@ -20,7 +20,8 @@
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "package": "com.nayanxyz.swarmmobileapp"
+      "package": "com.nayanxyz.swarmmobileapp",
+      "versionCode": 2
     },
     "web": {
       "output": "single",
