@@ -363,12 +363,12 @@ export default function App() {
       <View style={styles.authContainer}>
         {/* YOUR TEXT LOGO */}
         <Image 
-          source={require('../../assets/images/jango-logo.png')}
+          source={require('../../assets/images/jango-logo3.png')}
           style={styles.logoImage}
           resizeMode="contain"
         />
         <Text style={styles.authTitle}>
-          {isLoginMode ? 'Welcome!' : 'Create Account'}
+          {isLoginMode ? 'Welcomes you!' : 'Create Account'}
         </Text>
         <Text style={styles.authSubtitle}>
           {isLoginMode ? 'Sign in to access your secure vault.' : 'Join the Jango network.'}
@@ -606,11 +606,12 @@ const styles = StyleSheet.create({
     marginBottom: 30,
   },
   authTitle: { 
-    color: '#F8FAFC',          // Crisp white-off text for soft contrast
-    fontSize: 32, 
-    fontWeight: 'bold', 
-    textAlign: 'center', 
-    marginBottom: 10 
+    color: '#d8e7edfa',          // Crisp white-off text for soft contrast
+    fontSize: 23, 
+    fontWeight: 'normal', 
+    textAlign: 'center',
+    fontStyle: 'italic', 
+    marginBottom: 2 
   },
   authSubtitle: { 
     color: '#94A3B8',          // Muted steel text for secondary hierarchy
