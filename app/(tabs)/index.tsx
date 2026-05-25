@@ -600,10 +600,10 @@ const styles = StyleSheet.create({
     padding: 20 
   },
   logoImage: {
-    width: 120,
-    height: 120,
+    width: 250,
+    height: 60,
     alignSelf: 'center',
-    marginBottom: 15,
+    marginBottom: 30,
   },
   authTitle: { 
     color: '#F8FAFC',          // Crisp white-off text for soft contrast
