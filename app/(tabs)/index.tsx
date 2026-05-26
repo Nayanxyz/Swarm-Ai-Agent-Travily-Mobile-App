@@ -227,49 +227,50 @@ export default function App() {
   };
 
   // === 4. FETCH HISTORY WITH PAGINATION ===
-  const fetchHistory = async (userId: string, currentOffset: number = 0) => {
-    // PATCHED FLAW 1: Guard clause prevents rapid-fire identical requests
+  const fetchHistory = async (userId, currentOffset = 0) => {
     if ((!hasMoreHistory && currentOffset !== 0) || isLoadingMore) return; 
 
-    if (currentOffset > 0) setIsLoadingMore(true);
+    if (currentOffset > 0) {
+      setIsLoadingMore(true);
+    } else {
+      // If offset is 0, this is the initial boot. Lock the system.
+      setIsBooting(true); 
+    }
 
     try {
       const response = await fetch(`${API_BASE_URL}/history/${userId}?limit=15&offset=${currentOffset}`);
       
-      // PATCHED FLAW 3: Validate response
-      if (!response.ok) {
-         throw new Error(`Failed to fetch history. Status: ${response.status}`);
-      }
-
+      if (!response.ok) throw new Error(`Status: ${response.status}`);
       const result = await response.json();
 
       if (result.status === 'success') {
         const fetchedMessages = result.data;
-        
         if (fetchedMessages.length < 15) setHasMoreHistory(false);
 
-        const formattedHistory = fetchedMessages.map((msg: { role: string, content: string }, index: number) => ({
+        const formattedHistory = fetchedMessages.map((msg, index) => ({
           id: `history-${currentOffset}-${index}`, 
           text: msg.content,
           sender: msg.role === 'assistant' ? 'ai' : 'user'
         }));
 
         if (currentOffset === 0) {
+          // INJECT THE GREETING HERE, AT THE VERY END OF THE TIMELINE
           const historyWithGreeting = [
             ...formattedHistory, 
-            { id: '1', text: 'Hello User! Mera naam Jango hai, Kya seva kr skta hu?', sender: 'ai' }
+            { id: 'greeting-1', text: 'Hello User! Mera naam Jango hai, Kya seva kr skta hu?', sender: 'ai' }
           ];
           setMessages(historyWithGreeting);
         } else {
           setMessages(prev => [...prev, ...formattedHistory]);
         }
-        
         setOffset(currentOffset + 15);
       }
     } catch (error) {
       console.log("Could not load history:", error);
     } finally {
       setIsLoadingMore(false);
+      // Data is loaded and painted. Unlock the system.
+      if (currentOffset === 0) setIsBooting(false); 
     }
   };
 
