@@ -660,6 +660,16 @@ const styles = StyleSheet.create({
     textAlign: 'center', 
     marginBottom: 40 
   },
+  errorText: {
+    color: '#f4dfdf', 
+    backgroundColor: 'rgba(125, 59, 59, 0.1)', 
+    padding: 10,
+    borderRadius: 8,
+    textAlign: 'center',
+    marginBottom: 15,
+    fontWeight: '600',
+    overflow: 'hidden', 
+  },
   authInput: { 
     backgroundColor: '#1E293B', // Soft navy background for inputs (No harsh stark borders)
     color: '#F8FAFC', 
