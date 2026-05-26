@@ -535,13 +535,18 @@ export default function App() {
 
         <View style={styles.inputArea}>
           <TextInput
-            style={styles.inputBox}
-            placeholder="Type your message..."
+            style={[styles.inputBox, isBooting && { opacity: 0.5 }]} // Visually dim it
+            placeholder={isBooting ? "Loading memory..." : "Type your message..."}
             placeholderTextColor="#888"
             value={inputText}
             onChangeText={setInputText}
+            editable={!isBooting} // PHYSICAL LOCK
           />
-          <TouchableOpacity style={styles.sendButton} onPress={handleSend} disabled={isLoading}>
+          <TouchableOpacity 
+            style={[styles.sendButton, (isLoading || isBooting) && { backgroundColor: '#6272a4' }]} 
+            onPress={handleSend} 
+            disabled={isLoading || isBooting} // PHYSICAL LOCK
+          >
             <Text style={styles.sendText}>Send</Text>
           </TouchableOpacity>
         </View>
