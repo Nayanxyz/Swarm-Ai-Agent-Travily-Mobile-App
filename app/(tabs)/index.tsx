@@ -661,8 +661,8 @@ const styles = StyleSheet.create({
     marginBottom: 40 
   },
   errorText: {
-    color: '#f4dfdf', 
-    backgroundColor: 'rgba(125, 59, 59, 0.1)', 
+    color: '#e4eff3', 
+    backgroundColor: 'rgba(244, 235, 235, 0.1)', 
     padding: 10,
     borderRadius: 8,
     textAlign: 'center',
