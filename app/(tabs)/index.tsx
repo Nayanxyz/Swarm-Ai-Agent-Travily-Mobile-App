@@ -248,7 +248,7 @@ export default function App() {
         const fetchedMessages = result.data;
         if (fetchedMessages.length < 15) setHasMoreHistory(false);
 
-        const formattedHistory = fetchedMessages.map((msg, index) => ({
+        const formattedHistory = fetchedMessages.map((msg: { role: string, content: string }, index: number) => ({
           id: `history-${currentOffset}-${index}`, 
           text: msg.content,
           sender: msg.role === 'assistant' ? 'ai' : 'user'
