@@ -43,3 +43,4 @@ app-example
 /android
 # Local Environment Variables
 .env
+.vercel
