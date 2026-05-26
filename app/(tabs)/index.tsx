@@ -27,6 +27,7 @@ export default function App() {
   const [isOtpSent, setIsOtpSent] = useState(false);
   const [otpToken, setOtpToken] = useState('');
   const [newPasswordReset, setNewPasswordReset] = useState('');
+  const [authError, setAuthError] = useState('');
 
   // --- CHAT STATE ---
   const [messages, setMessages] = useState([
