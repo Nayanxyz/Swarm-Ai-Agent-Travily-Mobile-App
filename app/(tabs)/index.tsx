@@ -54,10 +54,9 @@ export default function App() {
       if (session?.user?.id && (event === 'SIGNED_IN' || event === 'INITIAL_SESSION')) {
         fetchHistory(session.user.id);
       } else if (event === 'SIGNED_OUT') {
-        // THE JANITOR: Wipes all memory and resets the page counters to zero
-        setMessages([
-          { id: '1', text: 'Hello User! Mera naam Jango hai, Kya seva kr skta hu?', sender: 'ai' }
-        ]);
+        // THE JANITOR: Wipes all memory and engages the lock
+        setMessages([]); // Completely empty
+        setIsBooting(true); // Lock the UI for the next user
         setInputText('');
         setOffset(0);              
         setHasMoreHistory(true);    
