@@ -30,9 +30,7 @@ export default function App() {
   const [authError, setAuthError] = useState('');
 
   // --- CHAT STATE ---
-  const [messages, setMessages] = useState([
-    { id: '1', text: 'Hello User! Mera naam Jango hai, Kya seva kr skta hu?', sender: 'ai' }
-  ]);
+  const [messages, setMessages] = useState([]);
   const [inputText, setInputText] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isBooting, setIsBooting] = useState(true);
