@@ -87,10 +87,17 @@ export default function App() {
   }
 
   async function signUpWithEmail() {
+    setAuthError(''); // 1. Always clear the slate
     const cleanEmail = email.trim();
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    
+    // Check 1: Invalid Email Formatting
     if (!emailRegex.test(cleanEmail)) {
-      Alert.alert("Invalid Email", "Please enter a valid email address structure.");
+      if (Platform.OS === 'web') {
+        setAuthError("Please enter a valid email address structure.");
+      } else {
+        Alert.alert("Invalid Email", "Please enter a valid email address structure.");
+      }
       return;
     }
 
@@ -98,15 +105,28 @@ export default function App() {
     const { error } = await supabase.auth.signUp({ email: cleanEmail, password });
     setAuthLoading(false);
 
+    // Check 2: Supabase Rejection (e.g., email already in use)
     if (error) {
-      Alert.alert('Signup Failed', error.message);
+      if (Platform.OS === 'web') {
+        setAuthError(error.message);
+      } else {
+        Alert.alert('Signup Failed', error.message);
+      }
       return;
     }
 
-    Alert.alert(
-      'Verify Your Account', 
-      'Account created successfully! We have sent a confirmation link to your email. Please verify it before trying to log in.'
-    );
+    // Check 3: Absolute Success
+    if (Platform.OS === 'web') {
+      // Reusing the error state for a success message is a slight hack, 
+      // but it gets the text on the screen without rewriting your UI tree.
+      setAuthError("Success! Check your email for the verification link."); 
+    } else {
+      Alert.alert(
+        'Verify Your Account', 
+        'Account created successfully! We have sent a confirmation link to your email. Please verify it before trying to log in.'
+      );
+    }
+    
     setIsLoginMode(true); 
   }
 
