@@ -404,6 +404,11 @@ export default function App() {
         <Text style={styles.authSubtitle}>
           {isLoginMode ? 'Sign in to access your secure vault.' : 'Join the Jango network.'}
         </Text>
+
+        {/* INJECT THE ERROR DISPLAY HERE */}
+        {authError !== '' ? (
+          <Text style={styles.errorText}>{authError}</Text>
+        ) : null}
         
         <TextInput
           style={styles.authInput}
