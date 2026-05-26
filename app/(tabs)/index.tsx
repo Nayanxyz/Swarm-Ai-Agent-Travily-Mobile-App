@@ -332,6 +332,11 @@ export default function App() {
       return (
         <View style={styles.authContainer}>
           <Text style={styles.authTitle}>Reset Password</Text>
+
+          {/* INJECT THE ERROR DISPLAY HERE TOO */}
+          {authError !== '' ? (
+            <Text style={styles.errorText}>{authError}</Text>
+          ) : null}
           
           {!isOtpSent ? (
             <>
