@@ -30,7 +30,8 @@ export default function App() {
   const [authError, setAuthError] = useState('');
 
   // --- CHAT STATE ---
-  const [messages, setMessages] = useState([]);
+  // We force TypeScript to understand the exact shape of the objects inside this array
+  const [messages, setMessages] = useState<{ id: string, text: string, sender: string }[]>([]);
   const [inputText, setInputText] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isBooting, setIsBooting] = useState(true);
@@ -227,7 +228,7 @@ export default function App() {
   };
 
   // === 4. FETCH HISTORY WITH PAGINATION ===
-  const fetchHistory = async (userId, currentOffset = 0) => {
+  const fetchHistory = async (userId: string, currentOffset: number = 0) => {
     if ((!hasMoreHistory && currentOffset !== 0) || isLoadingMore) return; 
 
     if (currentOffset > 0) {
