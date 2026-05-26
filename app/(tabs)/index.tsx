@@ -70,10 +70,20 @@ export default function App() {
 
   // === 2. AUTHENTICATION FUNCTIONS ===
   async function signInWithEmail() {
+    setAuthError(''); // Clear web errors
     setAuthLoading(true);
     const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
-    if (error) Alert.alert('Login Failed', error.message);
     setAuthLoading(false);
+
+    if (error) {
+      if (Platform.OS === 'web') {
+        // Web: Show the inline red text
+        setAuthError(error.message); 
+      } else {
+        // iOS/Android: Show the native OS popup
+        Alert.alert('Login Failed', error.message); 
+      }
+    }
   }
 
   async function signUpWithEmail() {
