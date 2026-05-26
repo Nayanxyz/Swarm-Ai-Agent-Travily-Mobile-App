@@ -519,7 +519,12 @@ export default function App() {
             ) : null
           }
           ListHeaderComponent={
-            isLoading ? (
+            isBooting ? (
+              <View style={styles.loadingBubble}>
+                <ActivityIndicator size="small" color="#f4f2f7" />
+                <Text style={styles.loadingText}>Syncing Neural Memory...</Text>
+              </View>
+            ) : isLoading ? (
               <View style={styles.loadingBubble}>
                 <ActivityIndicator size="small" color="#f4f2f7" />
                 <Text style={styles.loadingText}>Jango soch raha hai...</Text>
