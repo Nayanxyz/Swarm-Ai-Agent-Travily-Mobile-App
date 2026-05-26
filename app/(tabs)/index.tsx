@@ -35,6 +35,7 @@ export default function App() {
   ]);
   const [inputText, setInputText] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isBooting, setIsBooting] = useState(true);
 
   // --- PAGINATION STATE ---
   const [offset, setOffset] = useState(0); 
