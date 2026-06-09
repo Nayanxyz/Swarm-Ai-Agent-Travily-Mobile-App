@@ -84,4 +84,50 @@ npx expo start
 
 *To view on an iOS Simulator: Press i in the terminal.*
 
+## 📦 Building the Android APK
+To compile this React Native codebase into a standalone .apk file that you can install on any Android device, we will use Expo Application Services (EAS).
 
+### 1. Install the EAS CLI
+
+```Bash
+npm install -g eas-cli
+```
+### 2. Login to your Expo Account
+
+```Bash
+eas login
+```
+### 3. Configure the Build Profile
+Initialize the EAS configuration in your project:
+
+```Bash
+eas build:configure
+```
+This will generate an eas.json file. Open eas.json and modify the preview or development profile to explicitly output an APK instead of an AAB (Android App Bundle).
+```
+JSON
+{
+  "build": {
+    "preview": {
+      "android": {
+        "buildType": "apk"
+      }
+    },
+    "production": {}
+  }
+}
+```
+### 4. Execute the Build
+Run the following command to send your code to Expo's servers to be compiled into an APK:
+
+```Bash
+eas build -p android --profile preview
+```
+### 5. Download and Install
+Once the build is complete (usually 10-15 minutes), the terminal will output a link to download your .apk file.
+
+Download the file to your Android device.
+
+Ensure "Install from Unknown Sources" is enabled in your Android settings.
+
+Tap the APK to install Jango AI.
