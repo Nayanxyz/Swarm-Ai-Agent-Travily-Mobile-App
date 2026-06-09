@@ -9,9 +9,7 @@ import {
 } from 'react-native';
 import { supabase } from './supabase';
 
-// PATCHED FLAW 2: Environment variable setup.
-// Create a .env file and add EXPO_PUBLIC_API_URL=https://swarm-api-super-agent-travily.onrender.com
-// This prevents you from having to rewrite code when moving from local to production.
+
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'https://swarm-api-super-agent-travily.onrender.com';
 
 export default function App() {
@@ -90,7 +88,7 @@ export default function App() {
     const cleanEmail = email.trim();
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     
-    // Check 1: Invalid Email Formatting
+    // Invalid Email Formatting
     if (!emailRegex.test(cleanEmail)) {
       if (Platform.OS === 'web') {
         setAuthError("Please enter a valid email address structure.");
@@ -104,7 +102,7 @@ export default function App() {
     const { error } = await supabase.auth.signUp({ email: cleanEmail, password });
     setAuthLoading(false);
 
-    // Check 2: Supabase Rejection (e.g., email already in use)
+    // Supabase Rejection (ex. email already in use)
     if (error) {
       if (Platform.OS === 'web') {
         setAuthError(error.message);
@@ -114,10 +112,9 @@ export default function App() {
       return;
     }
 
-    // Check 3: Absolute Success
+    // Absolute Success
     if (Platform.OS === 'web') {
-      // Reusing the error state for a success message is a slight hack, 
-      // but it gets the text on the screen without rewriting your UI tree.
+      
       setAuthError("Success! Check your email for the verification link."); 
     } else {
       Alert.alert(
@@ -205,7 +202,7 @@ export default function App() {
         })
       });
       
-      // PATCHED FLAW 3: Validate response before trying to parse JSON
+      // Validate response before trying to parse JSON
       if (!response.ok) {
         throw new Error(`Server returned status: ${response.status}`);
       }
@@ -299,14 +296,14 @@ export default function App() {
         }),
       });
 
-      // PATCHED FLAW 3: Validate response
+      //  Validate response
       if (!response.ok) {
         throw new Error(`Chat API failed with status ${response.status}`);
       }
 
       const data = await response.json();
       
-      // PATCHED FLAW 4: Robust Unique ID generation
+      //  Robust Unique ID generation
       const uniqueAiId = Date.now().toString() + Math.random().toString(36).substring(7);
       const newAiMsg = { 
         id: uniqueAiId, 
@@ -324,9 +321,9 @@ export default function App() {
     }
   };
 
-  // ==========================================
+  
   // RENDER 1: AUTHENTICATION SCREEN
-  // ==========================================
+
   if (!session || !session.user || isForgotPasswordMode) {
     if (isForgotPasswordMode) {
       return (
@@ -466,9 +463,9 @@ export default function App() {
     );
   }
 
-  // ==========================================
+  
   // RENDER 2: CHAT SCREEN 
-  // ==========================================
+  
   return (
     <SafeAreaView style={styles.container}>
       <KeyboardAvoidingView 
@@ -643,7 +640,7 @@ const styles = StyleSheet.create({
   modalButtonRow: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 15 },
 
   // Auth Styles
-  // --- AUTH STYLES (UPGRADED TO ZEN OCEAN) ---
+  
   authContainer: { 
     flex: 1, 
     backgroundColor: '#0F172A', // Deep oceanic background (Calming & Professional)
@@ -657,7 +654,7 @@ const styles = StyleSheet.create({
     marginBottom: 30,
   },
   authTitle: { 
-    color: '#d8e7edfa',          // Crisp white-off text for soft contrast
+    color: '#d8e7edfa',          
     fontSize: 23, 
     fontWeight: 'normal', 
     textAlign: 'center',
@@ -665,7 +662,7 @@ const styles = StyleSheet.create({
     marginBottom: 2 
   },
   authSubtitle: { 
-    color: '#94A3B8',          // Muted steel text for secondary hierarchy
+    color: '#94A3B8',          
     fontSize: 16, 
     textAlign: 'center', 
     marginBottom: 40 
@@ -681,29 +678,29 @@ const styles = StyleSheet.create({
     overflow: 'hidden', 
   },
   authInput: { 
-    backgroundColor: '#1E293B', // Soft navy background for inputs (No harsh stark borders)
+    backgroundColor: '#1E293B', 
     color: '#F8FAFC', 
     padding: 15, 
-    borderRadius: 12,          // Slightly rounder corners look more modern/relaxed
+    borderRadius: 12,          
     fontSize: 16, 
     marginBottom: 15, 
     borderWidth: 1, 
-    borderColor: '#334155'     // Subtle input border boundary
+    borderColor: '#334155'     
   },
   primaryBtn: { 
-    backgroundColor: '#38BDF8', // Calm Sky Blue (Draws focus naturally without screaming)
+    backgroundColor: '#38BDF8', 
     padding: 16, 
     borderRadius: 12, 
     alignItems: 'center', 
     marginTop: 10,
-    shadowColor: '#38BDF8',     // Subtle professional glow instead of neon flat color
+    shadowColor: '#38BDF8',     
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.2,
     shadowRadius: 8,
     elevation: 4,
   },
   btnText: { 
-    color: '#0F172A',          // Dark text on a light button provides clean readability
+    color: '#0F172A',          
     fontSize: 18, 
     fontWeight: 'bold' 
   },
@@ -714,7 +711,7 @@ const styles = StyleSheet.create({
     marginTop: 15 
   },
   secondaryBtnText: { 
-    color: '#38BDF8',          // Matching brand link color
+    color: '#38BDF8',          
     fontSize: 16, 
     fontWeight: '600' 
   }
